@@ -38,6 +38,8 @@ The IM (baseline-plane height-difference integral) pipeline is:
 2. Remove the dominant background plane(s) from the food frame, then filter food points by their
    baseline-relative height difference.
 3. Cluster the surviving points in **baseline-plane (u, v) coordinates** to separate multiple food items.
+   With `enable_height_watershed` enabled (opt-in, off by default) a cluster whose top surface dips into
+   a **height valley** between two peaks is split further, so two nearly touching items are reported separately.
 4. Keep one top-surface point per cell and integrate
    `volume = Σ (food_top − baseline_height) × cell_size²`.
 5. Conservatively complete enclosed depth holes **inside a single component** with inverse-distance

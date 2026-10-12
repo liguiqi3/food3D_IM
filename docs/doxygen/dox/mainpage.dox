@@ -60,12 +60,15 @@
  *     A RANSAC plane defines the tray coordinate frame. Empty frames supply median heights
  *     per grid cell. The food frame is unit-normalized, optionally cropped, voxel-downsampled,
  *     and stripped of its dominant background plane. Surviving points are compared with the
- *     measured baseline and clustered by their footprint on that plane. For every accepted
+ *     measured baseline and clustered by their footprint on that plane; when
+ *     `enable_height_watershed` is enabled (opt-in) a cluster is split further where its top
+ *     surface dips into a height valley between two peaks. For every accepted
  *     top-surface cell, the height above the baseline is multiplied by cell area. Enclosed
  *     holes may be filled only within a single component and only when the hole guards pass.
  * @section method_zh [zh] 体积如何得到
  *     先用 RANSAC 平面建立烤盘坐标系，空盘帧在每个栅格内提供中值高度。食材帧经过单位换算、
- *     可选裁剪、体素降采样和背景平面去除后，与实测基线比较；剩余点按平面足迹聚类。
+ *     可选裁剪、体素降采样和背景平面去除后，与实测基线比较；剩余点按平面足迹聚类，
+ *     启用 `enable_height_watershed`（可选，默认关闭）时再按顶表面在两峰之间的高度凹谷细分为子连通块。
  *     每个有效顶面栅格的高度差乘以栅格面积，累加得到体积。封闭孔洞只会在单个连通块内部、
  *     且满足保护条件时补全。
  *
