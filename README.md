@@ -1,15 +1,15 @@
-# food_volume_measure
+# food3d_im
 
 Built with Conan 2 and CMake. Targets C++17, with optional C++20/23 features such as modules.
 
 ## Badges
 
-![License](https://img.shields.io/github/license/HeT-FTI/food_volume_measure?color=blue&label=license)
-![CodeFactor Grade](https://img.shields.io/codefactor/grade/github/HeT-FTI/food_volume_measure?label=code%20quality&logo=codefactor)
+![License](https://img.shields.io/github/license/HeT-FTI/food3d_im?color=blue&label=license)
+![CodeFactor Grade](https://img.shields.io/codefactor/grade/github/HeT-FTI/food3d_im?label=code%20quality&logo=codefactor)
 ![C++](https://img.shields.io/badge/C%2B%2B-17%2F20%2F23-blue?logo=c%2B%2B&logoColor=white)
 ![Modules](https://img.shields.io/badge/modules-C%2B%2B23%20experimental-purple?logo=c%2B%2B&logoColor=white)
-![CI](https://github.com/HeT-FTI/food_volume_measure/actions/workflows/ci-build-test.yml/badge.svg)
-![CI](https://github.com/HeT-FTI/food_volume_measure/actions/workflows/docs-build.yml/badge.svg)
+![CI](https://github.com/HeT-FTI/food3d_im/actions/workflows/ci-build-test.yml/badge.svg)
+![CI](https://github.com/HeT-FTI/food3d_im/actions/workflows/docs-build.yml/badge.svg)
 ![CMake](https://img.shields.io/badge/cmake-3.28%2B-orange?logo=cmake)
 ![Python](https://img.shields.io/badge/python-3.10%2B-blue?logo=python)
 ![Doxygen](https://img.shields.io/badge/docs-Doxygen-green?logo=doxygen&logoColor=white)
@@ -30,7 +30,7 @@ Built with Conan 2 and CMake. Targets C++17, with optional C++20/23 features suc
 
 ## Library: IM Food Volume Measurement
 
-`food_volume_measure` measures food volume in cubic centimetres from a fixed oven-tray depth camera.
+`food3d_im` measures food volume in cubic centimetres from a fixed oven-tray depth camera.
 The IM (baseline-plane height-difference integral) pipeline is:
 
 1. Build an empty-oven **baseline height map**: fit the tray plane from the first empty frame,

@@ -228,7 +228,7 @@ void bind_functions(py::module& m) {
 
 
 
-PYBIND11_MODULE(food_volume_measure_python, m) {
+PYBIND11_MODULE(food3d_im_python, m) {
     m.doc() = "Python bindings for the vm IM food volume measurement library";
     m.attr("__version__") = "0.1.0";
 

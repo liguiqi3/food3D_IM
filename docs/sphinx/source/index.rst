@@ -1,7 +1,7 @@
-food_volume_measure
+food3d_im
 ===================
 
-``food_volume_measure`` estimates the volume of food above an oven tray from two kinds of
+``food3d_im`` estimates the volume of food above an oven tray from two kinds of
 point cloud: one or more empty-tray frames and a frame containing food. The camera and tray
 must stay in the same coordinate frame between captures. The result is a height integral in
 cubic centimetres, accompanied by coverage and hole-filling diagnostics.

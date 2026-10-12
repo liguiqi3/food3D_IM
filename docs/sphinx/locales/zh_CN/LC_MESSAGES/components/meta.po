@@ -1,12 +1,12 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) 2026, HeT-FTI
-# This file is distributed under the same license as the food_volume_measure
+# This file is distributed under the same license as the food3d_im
 # package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: food_volume_measure 1.0\n"
+"Project-Id-Version: food3d_im 1.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-09-30 14:19+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
@@ -19,12 +19,12 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: ../../home/min/project/food_volume_measure/docs/sphinx/source/components/meta.rst:2
+#: ../../home/min/project/food3d_im/docs/sphinx/source/components/meta.rst:2
 #: 8b2ad64b0bea447b9103cb4357c85f6b
 msgid "Project metadata"
 msgstr "项目元数据"
 
-#: ../../home/min/project/food_volume_measure/docs/sphinx/source/components/meta.rst:4
+#: ../../home/min/project/food3d_im/docs/sphinx/source/components/meta.rst:4
 #: 0fe69fa2474f49be82028e686d34520b
 msgid ""
 "``metadata.json`` is read by the Conan recipe, the root CMake project, and "
@@ -36,88 +36,88 @@ msgstr ""
 "``metadata.json``。只有在希望这些使用方一起改变时才修改该文件；算法参数应在 ``MeasurementConfig`` 或测量用 "
 "JSON 文件中调整。"
 
-#: ../../home/min/project/food_volume_measure/docs/sphinx/source/components/meta.rst:9
+#: ../../home/min/project/food3d_im/docs/sphinx/source/components/meta.rst:9
 #: f577cbe83bf2464eafb31b8f7cfcfc79
 msgid "Settings that affect this library"
 msgstr "影响本库的设置"
 
-#: ../../home/min/project/food_volume_measure/docs/sphinx/source/components/meta.rst:15
+#: ../../home/min/project/food3d_im/docs/sphinx/source/components/meta.rst:15
 #: 6684b7ac31004b2a9ed59177899ba789
 msgid "Key"
 msgstr "键"
 
-#: ../../home/min/project/food_volume_measure/docs/sphinx/source/components/meta.rst:16
+#: ../../home/min/project/food3d_im/docs/sphinx/source/components/meta.rst:16
 #: 2c94fbe3bb754b449694f72a1309d7f4
 msgid "Effect"
 msgstr "作用"
 
-#: ../../home/min/project/food_volume_measure/docs/sphinx/source/components/meta.rst:17
+#: ../../home/min/project/food3d_im/docs/sphinx/source/components/meta.rst:17
 #: 7732850dde7c4e5fac0b156ef89603ce
 msgid "``build_cppstd``"
 msgstr "``build_cppstd``"
 
-#: ../../home/min/project/food_volume_measure/docs/sphinx/source/components/meta.rst:18
+#: ../../home/min/project/food3d_im/docs/sphinx/source/components/meta.rst:18
 #: aa140f7f4efe413681718df0d92e8034
 msgid "Sets the C++ standard; the current value is 17. Module support starts at 23."
 msgstr "设置 C++ 标准；当前值为 17。模块支持从 23 开始。"
 
-#: ../../home/min/project/food_volume_measure/docs/sphinx/source/components/meta.rst:19
+#: ../../home/min/project/food3d_im/docs/sphinx/source/components/meta.rst:19
 #: 7934c5384cb74b6f8e141a93a0e806a9
 msgid "``is_shared``"
 msgstr "``is_shared``"
 
-#: ../../home/min/project/food_volume_measure/docs/sphinx/source/components/meta.rst:20
+#: ../../home/min/project/food3d_im/docs/sphinx/source/components/meta.rst:20
 #: f1e73a67963d47958c6b745518bc245f
 msgid "Chooses static or shared library output, subject to the Windows fallback."
 msgstr "选择静态库或共享库，但 Windows 有退回静态库的限制。"
 
-#: ../../home/min/project/food_volume_measure/docs/sphinx/source/components/meta.rst:21
+#: ../../home/min/project/food3d_im/docs/sphinx/source/components/meta.rst:21
 #: 0f838022c28147edb866f50cb7536541
 msgid "``enable_python_bindings``"
 msgstr "``enable_python_bindings``"
 
-#: ../../home/min/project/food_volume_measure/docs/sphinx/source/components/meta.rst:22
+#: ../../home/min/project/food3d_im/docs/sphinx/source/components/meta.rst:22
 #: 0cc84759ac4849bbbb75ec7c7758987b
 msgid "Builds the host pybind11 module when true."
 msgstr "为 true 时构建主机端 pybind11 模块。"
 
-#: ../../home/min/project/food_volume_measure/docs/sphinx/source/components/meta.rst:23
+#: ../../home/min/project/food3d_im/docs/sphinx/source/components/meta.rst:23
 #: 99d1c6af72ec4473bc22283b9349c987
 msgid "``dependencies.cpp``"
 msgstr "``dependencies.cpp``"
 
-#: ../../home/min/project/food_volume_measure/docs/sphinx/source/components/meta.rst:24
+#: ../../home/min/project/food3d_im/docs/sphinx/source/components/meta.rst:24
 #: b538402991314600b552ccf4f70c1578
 msgid ""
 "Names CMake targets linked to the C++ library. Package versions are in "
 "``conandata.yml``."
 msgstr "列出链接到 C++ 库的 CMake 目标。包版本写在 ``conandata.yml``。"
 
-#: ../../home/min/project/food_volume_measure/docs/sphinx/source/components/meta.rst:26
+#: ../../home/min/project/food3d_im/docs/sphinx/source/components/meta.rst:26
 #: d2d2dd4cd45845e68fbb22e764d1eb53
 msgid "``doc_languages`` / ``doc_versions``"
 msgstr "``doc_languages`` / ``doc_versions``"
 
-#: ../../home/min/project/food_volume_measure/docs/sphinx/source/components/meta.rst:27
+#: ../../home/min/project/food3d_im/docs/sphinx/source/components/meta.rst:27
 #: ed4bc0f41c70493a9e860b9dca6d43f1
 msgid ""
 "Select the Doxygen/Sphinx build variants. These are documentation labels, "
 "not the package's semantic version."
 msgstr "选择 Doxygen/Sphinx 的语言和文档版本；这些标签不是包的语义版本号。"
 
-#: ../../home/min/project/food_volume_measure/docs/sphinx/source/components/meta.rst:29
+#: ../../home/min/project/food3d_im/docs/sphinx/source/components/meta.rst:29
 #: 919366266767465ea08469e96a0c3f83
 msgid "``workflow_triggers.docs``"
 msgstr "``workflow_triggers.docs``"
 
-#: ../../home/min/project/food_volume_measure/docs/sphinx/source/components/meta.rst:30
+#: ../../home/min/project/food3d_im/docs/sphinx/source/components/meta.rst:30
 #: d7ec36681230465f81d2ac74c949e2ad
 msgid ""
 "Enables the documentation CI trigger. A local ``docs/build.py`` run does not"
 " depend on this switch."
 msgstr "启用文档 CI 触发器。本地运行 ``docs/build.py`` 不依赖此开关。"
 
-#: ../../home/min/project/food_volume_measure/docs/sphinx/source/components/meta.rst:33
+#: ../../home/min/project/food3d_im/docs/sphinx/source/components/meta.rst:33
 #: ba8eb6486f1b4a8f97f0602499fbe906
 msgid ""
 "The dependency map is a build target map, not a list of versions. For "
@@ -127,12 +127,12 @@ msgstr ""
 "依赖映射列出的是构建目标，而不是版本。例如 ``PCL`` 项指定 ``PCL::PCL``，``conandata.yml`` 则选择 "
 "``pcl/1.14.1``。更换依赖时需同时检查两处。"
 
-#: ../../home/min/project/food_volume_measure/docs/sphinx/source/components/meta.rst:38
+#: ../../home/min/project/food3d_im/docs/sphinx/source/components/meta.rst:38
 #: 55d620f646b14c109262e60ce2cbb19e
 msgid "Documentation sources"
 msgstr "文档源文件"
 
-#: ../../home/min/project/food_volume_measure/docs/sphinx/source/components/meta.rst:40
+#: ../../home/min/project/food3d_im/docs/sphinx/source/components/meta.rst:40
 #: 2bfd237419254dd0a6ee09318bc5cd99
 msgid ""
 "Doxygen reads the paths and suffixes selected by ``doc_doxygen_folders`` and"

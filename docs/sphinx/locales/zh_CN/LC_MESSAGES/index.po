@@ -1,12 +1,12 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) 2026, HeT-FTI
-# This file is distributed under the same license as the food_volume_measure
+# This file is distributed under the same license as the food3d_im
 # package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: food_volume_measure 1.0\n"
+"Project-Id-Version: food3d_im 1.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-09-30 14:36+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
@@ -19,40 +19,40 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: ../../home/min/project/food_volume_measure/docs/sphinx/source/index.rst:30
+#: ../../home/min/project/food3d_im/docs/sphinx/source/index.rst:30
 msgid "Measure a frame"
 msgstr "测量一帧点云"
 
-#: ../../home/min/project/food_volume_measure/docs/sphinx/source/index.rst:30
+#: ../../home/min/project/food3d_im/docs/sphinx/source/index.rst:30
 msgid "Build with Conan"
 msgstr "使用 Conan 构建"
 
-#: ../../home/min/project/food_volume_measure/docs/sphinx/source/index.rst:30
+#: ../../home/min/project/food3d_im/docs/sphinx/source/index.rst:30
 msgid "CMake targets"
 msgstr "CMake 目标"
 
-#: ../../home/min/project/food_volume_measure/docs/sphinx/source/index.rst:30
+#: ../../home/min/project/food3d_im/docs/sphinx/source/index.rst:30
 msgid "Project metadata"
 msgstr "项目元数据"
 
-#: ../../home/min/project/food_volume_measure/docs/sphinx/source/index.rst:2
+#: ../../home/min/project/food3d_im/docs/sphinx/source/index.rst:2
 #: c6f085487c364344b5b8f818e80b15f5
-msgid "food_volume_measure"
-msgstr "food_volume_measure 使用文档"
+msgid "food3d_im"
+msgstr "food3d_im 使用文档"
 
-#: ../../home/min/project/food_volume_measure/docs/sphinx/source/index.rst:4
+#: ../../home/min/project/food3d_im/docs/sphinx/source/index.rst:4
 #: 1c1a844630e74e8eb94cc3dd4f17f2d6
 msgid ""
-"``food_volume_measure`` estimates the volume of food above an oven tray from"
+"``food3d_im`` estimates the volume of food above an oven tray from"
 " two kinds of point cloud: one or more empty-tray frames and a frame "
 "containing food. The camera and tray must stay in the same coordinate frame "
 "between captures. The result is a height integral in cubic centimetres, "
 "accompanied by coverage and hole-filling diagnostics."
 msgstr ""
-"``food_volume_measure`` "
+"``food3d_im`` "
 "根据空烤盘点云和食材点云估算食材高出烤盘的体积。空盘可拍摄一帧或多帧；两次采集之间，相机与烤盘必须保持在同一坐标系。结果以立方厘米表示，并附带覆盖情况和补洞数量，方便判断哪些部分来自观测。"
 
-#: ../../home/min/project/food_volume_measure/docs/sphinx/source/index.rst:9
+#: ../../home/min/project/food3d_im/docs/sphinx/source/index.rst:9
 #: b7ba9020f0594a8bb9153c6f5f6027df
 msgid ""
 "Start with :doc:`measurement <export>` for a complete C++ example. Read "
@@ -66,12 +66,12 @@ msgstr ""
 "``VolumeEstimate`` 的接口说明由 Doxygen 生成。本地构建文档后，打开 "
 "``docs/doxygen/build/docs.html`` 可选择语言。"
 
-#: ../../home/min/project/food_volume_measure/docs/sphinx/source/index.rst:15
+#: ../../home/min/project/food3d_im/docs/sphinx/source/index.rst:15
 #: f91cc30356754b0d81c6a267159368a6
 msgid "What the estimate means"
 msgstr "体积结果的含义"
 
-#: ../../home/min/project/food_volume_measure/docs/sphinx/source/index.rst:17
+#: ../../home/min/project/food3d_im/docs/sphinx/source/index.rst:17
 #: 46a937fadede4d3ea5941cd652b0d1fa
 msgid ""
 "The library fits a plane to the empty tray, stores the observed tray height "
@@ -81,7 +81,7 @@ msgid ""
 " is reported separately from the volume supported by measured points."
 msgstr "库从空烤盘点云拟合平面，并在每个栅格保存实测烤盘高度，再与食材点比较。空盘没有数据的栅格不会用理想平面补齐。食材表面内部的小孔洞可能被补全；这部分体积与实测点支撑的体积分开报告。"
 
-#: ../../home/min/project/food_volume_measure/docs/sphinx/source/index.rst:22
+#: ../../home/min/project/food3d_im/docs/sphinx/source/index.rst:22
 #: e37a49bdbea74ffeaa7be9907e345e14
 msgid ""
 "Check ``VolumeEstimate.status`` before using any numeric result. On success,"
@@ -95,12 +95,12 @@ msgstr ""
 "``interpolated_cells`` 很多，或 ``coverage_ratio`` 很低，应检查输入点云和中间 "
 "PCD；不要直接把估算值当作实测真值。"
 
-#: ../../home/min/project/food_volume_measure/docs/sphinx/source/index.rst:28
+#: ../../home/min/project/food3d_im/docs/sphinx/source/index.rst:28
 #: 405e6c11461a4486b41d26aa9fa96693
 msgid "Where to go next"
 msgstr "继续阅读"
 
-#: ../../home/min/project/food_volume_measure/docs/sphinx/source/index.rst:38
+#: ../../home/min/project/food3d_im/docs/sphinx/source/index.rst:38
 #: 83bcc4a2f8fc4b049b13fc5dfd5e9648
 msgid ""
 "The package targets C++17. The PCL measurement pipeline runs on host "

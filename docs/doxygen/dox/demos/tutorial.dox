@@ -13,9 +13,9 @@
  *
  * @include demo.cxx
  *
- * @note [en] Link against `food_volume_measure::food_volume_measure` when consuming the
+ * @note [en] Link against `food3d_im::food3d_im` when consuming the
  *     installed CMake package. Input points default to metres; change the input unit for
  *     millimetre PCD files. ROI bounds and distance parameters remain in metres.
- * @note [zh] 使用已安装的 CMake 包时链接 `food_volume_measure::food_volume_measure`。
+ * @note [zh] 使用已安装的 CMake 包时链接 `food3d_im::food3d_im`。
  *     点云默认以米为单位；毫米 PCD 需修改输入单位。ROI 边界和距离参数仍以米表示。
  */

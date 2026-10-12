@@ -1,5 +1,5 @@
 /*!
- * @mainpage food_volume_measure
+ * @mainpage food3d_im
  *
  * @section purpose_en [en] What this library measures
  *     Given an empty-tray point cloud and a food point cloud captured in the same coordinate

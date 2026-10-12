@@ -1,5 +1,5 @@
 {
-  "name": "food_volume_measure",
+  "name": "food3d_im",
   "target": "auto",
   "version": "0.1.0",
   "team": "HeT-FTI",
@@ -8,8 +8,8 @@
   "authors": ["Chen Zhang <chen2.zhang@szhittech.com>"],
   "maintainers": ["Chen Zhang <chen2.zhang@szhittech.com>"],
   "topics": ["build", "library", "point-cloud", "volume-measurement", "pcl"],
-  "url": "https://github.com/HeT-FTI/food_volume_measure.git",
-  "homepage": "https://github.com/HeT-FTI/food_volume_measure",
+  "url": "https://github.com/HeT-FTI/food3d_im.git",
+  "homepage": "https://github.com/HeT-FTI/food3d_im",
   "cmake_version": "4.0.1",
   "build_cppstd": "17",
   "build_cstd": "11",

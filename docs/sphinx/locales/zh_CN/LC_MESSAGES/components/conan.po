@@ -1,12 +1,12 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) 2026, HeT-FTI
-# This file is distributed under the same license as the food_volume_measure
+# This file is distributed under the same license as the food3d_im
 # package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: food_volume_measure 1.0\n"
+"Project-Id-Version: food3d_im 1.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-09-30 14:33+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
@@ -19,12 +19,12 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: ../../home/min/project/food_volume_measure/docs/sphinx/source/components/conan.rst:2
+#: ../../home/min/project/food3d_im/docs/sphinx/source/components/conan.rst:2
 #: 5c524c4b87ee431fbec8ddd40a025b87
 msgid "Build with Conan"
 msgstr "使用 Conan 构建"
 
-#: ../../home/min/project/food_volume_measure/docs/sphinx/source/components/conan.rst:4
+#: ../../home/min/project/food3d_im/docs/sphinx/source/components/conan.rst:4
 #: 35ad52996ce94e9b9b6cf7594a2b459b
 msgid ""
 "The package recipe in ``conanfile.py`` reads its requirements from "
@@ -35,17 +35,17 @@ msgstr ""
 "``conanfile.py`` 配方从 ``conandata.yml`` 读取依赖。PCL、Eigen 和 nlohmann_json "
 "是运行时依赖；启用 Python 绑定时还会引入 pybind11。GTest 只供测试包使用，不属于运行时库。"
 
-#: ../../home/min/project/food_volume_measure/docs/sphinx/source/components/conan.rst:9
+#: ../../home/min/project/food3d_im/docs/sphinx/source/components/conan.rst:9
 #: 4e10cefc0d684bc3af57819251d226aa
 msgid "Build and run the consumer check"
 msgstr "构建并运行使用方检查"
 
-#: ../../home/min/project/food_volume_measure/docs/sphinx/source/components/conan.rst:11
+#: ../../home/min/project/food3d_im/docs/sphinx/source/components/conan.rst:11
 #: 8c148d9d6ac442b489ab7241e11168ab
 msgid "From the repository root:"
 msgstr "在仓库根目录执行："
 
-#: ../../home/min/project/food_volume_measure/docs/sphinx/source/components/conan.rst:17
+#: ../../home/min/project/food3d_im/docs/sphinx/source/components/conan.rst:17
 #: 2c84a6f1f943407c89efa5a335a3454b
 msgid ""
 "``conan create`` builds the package and runs the test package's consumer "
@@ -61,7 +61,7 @@ msgstr ""
 "在找不到兼容二进制时从源码编译依赖，因此首次执行可能花较长时间编译 PCL。缓存中的包只有在版本、选项、编译器设置和依赖图与当前 profile "
 "匹配时才能复用。"
 
-#: ../../home/min/project/food_volume_measure/docs/sphinx/source/components/conan.rst:24
+#: ../../home/min/project/food3d_im/docs/sphinx/source/components/conan.rst:24
 #: bb4f277616804a3181a80ff33c9f9766
 msgid ""
 "To avoid a local PCL source build, use a remote with a matching prebuilt PCL"
@@ -73,12 +73,12 @@ msgstr ""
 "若想避免本机编译 PCL，需要从远端获取匹配的预编译包，或先把匹配包加入本地缓存。删除 ``--build=missing`` 只会在缺少二进制包时使 "
 "Conan 报错，并不会产生二进制包。若每次都重新编译，应核对实际解析出的 Conan profile 和 PCL package ID。"
 
-#: ../../home/min/project/food_volume_measure/docs/sphinx/source/components/conan.rst:30
+#: ../../home/min/project/food3d_im/docs/sphinx/source/components/conan.rst:30
 #: f2588406cc884b76a6d9ccf1c8e237be
 msgid "How the recipe reaches CMake"
 msgstr "配方如何调用 CMake"
 
-#: ../../home/min/project/food_volume_measure/docs/sphinx/source/components/conan.rst:32
+#: ../../home/min/project/food3d_im/docs/sphinx/source/components/conan.rst:32
 #: fc12ba03d17045d4b947d9c14389aa59
 msgid ""
 "The recipe creates a CMake toolchain and dependency files, then passes the C"
@@ -92,7 +92,7 @@ msgstr ""
 "PCL、Eigen 和 nlohmann_json。公开头文件及导出的 CMake 目标随包安装。``metadata.json`` 中的 "
 "``enable_python_bindings`` 为 true 时，主机构建会生成 Python 绑定；交叉构建跳过主机 Python 模块。"
 
-#: ../../home/min/project/food_volume_measure/docs/sphinx/source/components/conan.rst:38
+#: ../../home/min/project/food3d_im/docs/sphinx/source/components/conan.rst:38
 #: 88314de83ea440fd8b731686ef16251d
 msgid ""
 "For a bare-metal profile, the recipe filters dependencies through "

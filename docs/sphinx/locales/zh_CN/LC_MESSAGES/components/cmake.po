@@ -1,12 +1,12 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) 2026, HeT-FTI
-# This file is distributed under the same license as the food_volume_measure
+# This file is distributed under the same license as the food3d_im
 # package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: food_volume_measure 1.0\n"
+"Project-Id-Version: food3d_im 1.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-09-30 14:19+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
@@ -19,12 +19,12 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: ../../home/min/project/food_volume_measure/docs/sphinx/source/components/cmake.rst:2
+#: ../../home/min/project/food3d_im/docs/sphinx/source/components/cmake.rst:2
 #: 3d6e9affa30b41bca9c728aa604144db
 msgid "CMake targets"
 msgstr "CMake 目标"
 
-#: ../../home/min/project/food_volume_measure/docs/sphinx/source/components/cmake.rst:4
+#: ../../home/min/project/food3d_im/docs/sphinx/source/components/cmake.rst:4
 #: fcbc166913b241ed8415a85930c67fcd
 msgid ""
 "``CMakeLists.txt`` reads the package name, language standards, and build "
@@ -35,31 +35,31 @@ msgstr ""
 "``CMakeLists.txt`` 从 ``metadata.json`` 读取包名、语言标准和构建开关。它只收集 ``include/`` "
 "下的公开头文件及 ``src/`` 下的实现文件，测试与示例不会混入库源码。"
 
-#: ../../home/min/project/food_volume_measure/docs/sphinx/source/components/cmake.rst:10
+#: ../../home/min/project/food3d_im/docs/sphinx/source/components/cmake.rst:10
 #: 77cec8950cc04f5d9cdc3e119bd99698
 msgid "Targets installed for consumers"
 msgstr "供使用方链接的目标"
 
-#: ../../home/min/project/food_volume_measure/docs/sphinx/source/components/cmake.rst:12
+#: ../../home/min/project/food3d_im/docs/sphinx/source/components/cmake.rst:12
 #: fcbfe9b52f2e41d79f307116a013f773
 msgid ""
-"The regular build creates ``food_volume_measure_c`` and "
-"``food_volume_measure_cpp`` plus an interface target, "
-"``food_volume_measure``, that links both. The current project has no C "
+"The regular build creates ``food3d_im_c`` and "
+"``food3d_im_cpp`` plus an interface target, "
+"``food3d_im``, that links both. The current project has no C "
 "implementation files; the C target is kept for the template's C/C++ package "
 "layout. The measurement API is C++ and lives in ``measurement.hpp`` and "
 "``types.hpp``."
 msgstr ""
-"常规构建生成 ``food_volume_measure_c``、``food_volume_measure_cpp``，以及链接两者的接口目标 "
-"``food_volume_measure``。当前项目没有 C 实现文件；保留 C 目标是为了兼容模板的 C/C++ 包布局。测量接口为 "
+"常规构建生成 ``food3d_im_c``、``food3d_im_cpp``，以及链接两者的接口目标 "
+"``food3d_im``。当前项目没有 C 实现文件；保留 C 目标是为了兼容模板的 C/C++ 包布局。测量接口为 "
 "C++，声明在 ``measurement.hpp`` 和 ``types.hpp`` 中。"
 
-#: ../../home/min/project/food_volume_measure/docs/sphinx/source/components/cmake.rst:17
+#: ../../home/min/project/food3d_im/docs/sphinx/source/components/cmake.rst:17
 #: f08409ee5905404983a8cf312c7ad3de
 msgid "An installed consumer can use the exported target:"
 msgstr "安装后的使用方可链接导出的目标："
 
-#: ../../home/min/project/food_volume_measure/docs/sphinx/source/components/cmake.rst:24
+#: ../../home/min/project/food3d_im/docs/sphinx/source/components/cmake.rst:24
 #: 47fd2a947ddc4fe2aa2bced2acbc88fd
 msgid ""
 "The Conan toolchain supplies the dependency locations. The CMake "
@@ -70,22 +70,22 @@ msgstr ""
 "Conan toolchain 提供依赖位置。CMake 配置还需要配方生成的 ``C_DEPS`` 与 ``CPP_DEPS``，格式为 "
 "``Pkg@Target``；如果不通过 Conan 配置根项目，需自行提供等价的依赖设置。"
 
-#: ../../home/min/project/food_volume_measure/docs/sphinx/source/components/cmake.rst:29
+#: ../../home/min/project/food3d_im/docs/sphinx/source/components/cmake.rst:29
 #: 5792ca397991437c88b62ef14ef4b0a6
 msgid "Optional outputs"
 msgstr "可选构建产物"
 
-#: ../../home/min/project/food_volume_measure/docs/sphinx/source/components/cmake.rst:31
+#: ../../home/min/project/food3d_im/docs/sphinx/source/components/cmake.rst:31
 #: 2d2825ab74024252b1ec3e40b612502b
 msgid ""
 "The default C++ standard is 17. C++ module compilation is considered only "
 "with C++23 or newer. A host build with ``enable_python_bindings`` enabled "
-"also installs the ``food_volume_measure_python`` module; a cross build skips"
+"also installs the ``food3d_im_python`` module; a cross build skips"
 " it. On Windows, a requested shared-library build falls back to static with "
 "a warning. See :doc:`project metadata <meta>` for the switches that control "
 "these choices."
 msgstr ""
 "默认 C++ 标准是 17；只有使用 C++23 或更高版本时才考虑编译模块。启用 ``enable_python_bindings`` "
-"的主机构建还会安装 ``food_volume_measure_python`` 模块，交叉构建则跳过。Windows "
+"的主机构建还会安装 ``food3d_im_python`` 模块，交叉构建则跳过。Windows "
 "上请求共享库时会警告并退回静态库。控制这些行为的开关见 :doc:`项目元数据 <meta>`。"
 
