@@ -254,35 +254,43 @@ std::vector<int> split_one_component(const std::vector<CellKey>& cells, const st
         return sub_labels;
     }
 
-    // Flood downhill from every marker: the tallest frontier claims each cell first, so the two
-    // basins meet in the valley instead of one of them racing along the low ground.
+    // Assign every cell to the geodesically nearest marker. A pure height-first flood lets a large,
+    // lower basin race along a low trailing edge and steal the other item's rim; the uniform-cost
+    // geodesic assignment puts the boundary between the markers instead.
     std::vector<int> label(cell_count, -1);
+    std::vector<double> dist(cell_count, std::numeric_limits<double>::infinity());
     using FloodNode = std::tuple<double, std::size_t, int>;
-    std::priority_queue<FloodNode> frontier;
+    std::priority_queue<FloodNode, std::vector<FloodNode>, std::greater<>> frontier;
     for (std::size_t i = 0; i < cell_count; ++i) {
         if (marker[i] >= 0) {
-            frontier.emplace(heights_m[i], i, marker[i]);
+            label[i] = marker[i];
+            dist[i] = 0.0;
+            frontier.emplace(0.0, i, marker[i]);
         }
     }
     while (!frontier.empty()) {
         const FloodNode node = frontier.top();
         frontier.pop();
         const std::size_t index = std::get<1>(node);
-        if (label[index] >= 0) {
+        if (std::get<0>(node) > dist[index]) {
             continue;
         }
         const int id = std::get<2>(node);
-        label[index] = id;
         collect_neighbors(index);
         for (const std::size_t j : neighbors) {
-            if (label[j] < 0) {
-                frontier.emplace(heights_m[j], j, id);
+            const bool diagonal = cells[j].first != cells[index].first && cells[j].second != cells[index].second;
+            const double step = diagonal ? std::sqrt(2.0) : 1.0;
+            const double next = dist[index] + step;
+            if (next < dist[j]) {
+                dist[j] = next;
+                label[j] = id;
+                frontier.emplace(next, j, id);
             }
         }
     }
 
-    // Valley floor between two markers: the lowest cell on their shared boundary. Using the lower
-    // cell of each boundary pair exposes a valley even when one basin absorbed the whole valley.
+    // Valley floor between two markers: the lowest cell on their shared boundary. The drop from the
+    // lower peak down to this floor is the separating valley's depth.
     std::map<std::pair<int, int>, double> valley_floor_m;
     for (std::size_t i = 0; i < cell_count; ++i) {
         if (label[i] < 0) {
