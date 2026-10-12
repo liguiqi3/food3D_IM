@@ -77,7 +77,7 @@ bool load_config_from_json(const std::string& path, MeasurementConfig& out) {
              {"input_unit", "roi", "voxel_size_m", "plane_distance_threshold_m", "remove_secondary_plane",
               "foreground_cluster_eps_m", "cluster_min_points", "selected_labels", "integration_resolution_m",
               "roi_border_margin_m", "min_height_m", "max_height_m", "hole_fill_max_cells",
-              "curve_fill_max_hole_area_cm2", "middle_cloud_dir"}) {
+              "curve_fill_max_hole_area_cm2", "middle_cloud_dir", "enable_height_watershed"}) {
             if (it.key() == key) {
                 supported = true;
                 break;
@@ -129,6 +129,7 @@ bool load_config_from_json(const std::string& path, MeasurementConfig& out) {
     read_if_present(root, "remove_secondary_plane", out.remove_secondary_plane);
     read_if_present(root, "foreground_cluster_eps_m", out.foreground_cluster_eps_m);
     read_if_present(root, "cluster_min_points", out.cluster_min_points);
+    read_if_present(root, "enable_height_watershed", out.enable_height_watershed);
     read_if_present(root, "integration_resolution_m", out.integration_resolution_m);
     read_if_present(root, "roi_border_margin_m", out.roi_border_margin_m);
     read_if_present(root, "min_height_m", out.min_height_m);
@@ -162,6 +163,7 @@ bool save_config_to_json(const MeasurementConfig& cfg, const std::string& path) 
     root["remove_secondary_plane"] = cfg.remove_secondary_plane;
     root["foreground_cluster_eps_m"] = cfg.foreground_cluster_eps_m;
     root["cluster_min_points"] = cfg.cluster_min_points;
+    root["enable_height_watershed"] = cfg.enable_height_watershed;
     root["selected_labels"] = cfg.selected_labels;
     root["integration_resolution_m"] = cfg.integration_resolution_m;
     root["roi_border_margin_m"] = cfg.roi_border_margin_m;

@@ -114,6 +114,7 @@ void bind_structures(py::module& m) {
         .def_readwrite("remove_secondary_plane", &MeasurementConfig::remove_secondary_plane)
         .def_readwrite("foreground_cluster_eps_m", &MeasurementConfig::foreground_cluster_eps_m)
         .def_readwrite("cluster_min_points", &MeasurementConfig::cluster_min_points)
+        .def_readwrite("enable_height_watershed", &MeasurementConfig::enable_height_watershed)
         .def_readwrite("selected_labels", &MeasurementConfig::selected_labels)
         .def_readwrite("integration_resolution_m", &MeasurementConfig::integration_resolution_m)
         .def_readwrite("roi_border_margin_m", &MeasurementConfig::roi_border_margin_m)

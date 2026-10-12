@@ -39,6 +39,15 @@ constexpr int kCurveFillMinRimSamples = 16;
 constexpr double kCurveFillMinRimCoverage = 0.75;
 constexpr double kCurveFillMaxFitRmseM = 0.004;
 constexpr double kCurveFillMaxPredictionRiseM = 0.015;
+// Height watershed: two nearly touching items share one footprint cluster and are split
+// only where the top surface drops by at least this depth (metres) between their peaks.
+constexpr double kComponentSplitMinValleyDepthM = 0.004;
+// ...and by at least this fraction of the lower peak's height, so a merely bumpy surface
+// (sensor and voxel noise) is never split into pieces.
+constexpr double kComponentSplitMinValleyFrac = 0.35;
+// Watershed markers are the cells at or above this fraction of a component's peak height, so
+// only genuine high plateaus seed a basin and surface noise cannot fragment a single item.
+constexpr double kComponentSplitSeedFrac = 0.55;
 
 } // namespace volume_defaults
 
@@ -139,9 +148,13 @@ enum class MeasurementStatus : std::uint8_t {
  *     metres. An absent `roi` disables cropping, an empty `selected_labels` selects all
  *     eligible components, and an empty `middle_cloud_dir` disables PCD dumps. Start with
  *     defaults and change only values supported by the capture geometry.
+ *     `enable_height_watershed` (default false) splits an over-merged footprint cluster at a
+ *     height valley; enable it to separate nearly touching items.
  * @details [zh] 输入点坐标使用 `input_unit`；ROI 边界与距离字段始终以米计。
  *     `roi` 为空时不裁剪，`selected_labels` 为空时选择全部合格连通块，
  *     `middle_cloud_dir` 为空时不保存中间 PCD。建议从默认值开始，只调整与采集条件有关的值。
+ *     `enable_height_watershed`（默认 false）在高度凹谷处细分被过度合并的足迹簇；
+ *     启用后可区分相邻食材。
  * @exporter
  */
 struct MeasurementConfig {
@@ -160,6 +173,10 @@ struct MeasurementConfig {
     // Foreground footprint clustering (2D).
     double foreground_cluster_eps_m = volume_defaults::kForegroundClusterEpsM;
     int cluster_min_points = volume_defaults::kClusterMinPoints;
+
+    // Split an over-merged footprint cluster where the top surface dips into a height valley
+    // between two peaks. Disabled by default; enable it to separate nearly touching items.
+    bool enable_height_watershed = false;
 
     // Foreground component selection.
     // Empty selects all eligible components.
