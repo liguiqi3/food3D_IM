@@ -23,6 +23,12 @@ namespace {
 constexpr double kCell = 0.005;
 constexpr double kCuboidTop = 0.02;
 constexpr double kExpectedVolumeCm3 = 200.0;
+// A clear height valley (8 mm) between two 20 mm tops; deep enough to force a split.
+constexpr double kValleyTop = 0.008;
+// A shallow dimple (18 mm) inside a single 20 mm top; too shallow to force a split.
+constexpr double kDimpleTop = 0.018;
+// A 12 mm saddle joining two 20 mm humps: one connected item, high enough to stay a single seed.
+constexpr double kBridgeTop = 0.012;
 
 PointCloud make_baseline(double half = 0.15) {
     PointCloud cloud;
@@ -85,6 +91,8 @@ MeasurementConfig make_config() {
     cfg.min_height_m = 0.0015F;
     cfg.cluster_min_points = 8;
     cfg.foreground_cluster_eps_m = 0.010F;
+    // The feature is opt-in; the watershed tests enable it explicitly here.
+    cfg.enable_height_watershed = true;
     return cfg;
 }
 
@@ -451,6 +459,29 @@ TEST(Measurer, SmallClusterRejected) {
 
 
 
+TEST(Measurer, BumpySingleItemNotSplit) {
+    // One item shaped as two 20 mm humps joined by a 12 mm saddle. Seeding from every raw maximum
+    // carved this single item into two pieces; plateau seeding keeps it one component.
+    PointCloud food = make_baseline(0.25);
+    for (double x = 0.0025; x <= 0.1975 + 1.0e-9; x += kCell) {
+        for (double y = 0.0025; y <= 0.0975 + 1.0e-9; y += kCell) {
+            const bool bridge = std::fabs(x - 0.0975) < 1.0e-6 || std::fabs(x - 0.1025) < 1.0e-6;
+            food.points.push_back(
+                {static_cast<float>(x), static_cast<float>(y), static_cast<float>(bridge ? kBridgeTop : kCuboidTop)});
+        }
+    }
+
+    auto measurer = make_measurer();
+    const auto est = measurer.set_baseline({make_baseline(0.25)}).set_food(food).run();
+    ASSERT_EQ(est.status, MeasurementStatus::kSuccess) << est.message;
+    EXPECT_EQ(est.component_count, 1u);
+    ASSERT_EQ(est.component_estimates.size(), 1u);
+    // Two humps of ~180 cm3 each are one item; the saddle must not add a second component.
+    EXPECT_GT(est.volume_cm3, 300.0);
+}
+
+
+
 TEST(Measurer, MultiComponentVolume) {
     PointCloud food = make_baseline(0.25);
     // Two separated cuboids; the second starts far enough to form its own footprint cluster.
@@ -479,6 +510,77 @@ TEST(Measurer, MultiComponentVolume) {
         per_component_sum += estimate.volume_cm3;
     }
     EXPECT_NEAR(per_component_sum, est.volume_cm3, 30.0);
+}
+
+
+
+TEST(Measurer, CloseFoodSplitByHeightValley) {
+    // Two 20 mm slabs whose footprints are contiguous (a 5 mm seam) with an 8 mm valley along the
+    // seam. DBSCAN merges them into one cluster; the height watershed must split them apart.
+    PointCloud food = make_baseline(0.25);
+    for (double x = 0.0025; x <= 0.1975 + 1.0e-9; x += kCell) {
+        for (double y = 0.0025; y <= 0.0975 + 1.0e-9; y += kCell) {
+            const bool valley = std::fabs(x - 0.0975) < 1.0e-6 || std::fabs(x - 0.1025) < 1.0e-6;
+            food.points.push_back(
+                {static_cast<float>(x), static_cast<float>(y), static_cast<float>(valley ? kValleyTop : kCuboidTop)});
+        }
+    }
+
+    auto measurer = make_measurer();
+    const auto est = measurer.set_baseline({make_baseline(0.25)}).set_food(food).run();
+    ASSERT_EQ(est.status, MeasurementStatus::kSuccess) << est.message;
+    EXPECT_EQ(est.component_count, 2u);
+    // The two slabs sum to about 388 cm3 once the valley columns are accounted for.
+    EXPECT_NEAR(est.volume_cm3, 2.0 * kExpectedVolumeCm3, 40.0);
+    ASSERT_EQ(est.component_estimates.size(), 2u);
+    for (const auto& estimate : est.component_estimates) {
+        EXPECT_NEAR(estimate.volume_cm3, kExpectedVolumeCm3, 40.0);
+    }
+}
+
+
+
+TEST(Measurer, HeightWatershedSwitchDisablesSplit) {
+    // The same contiguous two-slab scene as CloseFoodSplitByHeightValley. With the switch off the
+    // raw DBSCAN cluster is kept, so both items collapse into a single component.
+    PointCloud food = make_baseline(0.25);
+    for (double x = 0.0025; x <= 0.1975 + 1.0e-9; x += kCell) {
+        for (double y = 0.0025; y <= 0.0975 + 1.0e-9; y += kCell) {
+            const bool valley = std::fabs(x - 0.0975) < 1.0e-6 || std::fabs(x - 0.1025) < 1.0e-6;
+            food.points.push_back(
+                {static_cast<float>(x), static_cast<float>(y), static_cast<float>(valley ? kValleyTop : kCuboidTop)});
+        }
+    }
+
+    MeasurementConfig cfg = make_config();
+    cfg.enable_height_watershed = false;
+    FoodVolumeMeasurer measurer;
+    measurer.set_config(cfg);
+    const auto est = measurer.set_baseline({make_baseline(0.25)}).set_food(food).run();
+    ASSERT_EQ(est.status, MeasurementStatus::kSuccess) << est.message;
+    EXPECT_EQ(est.cluster_count, 1u);
+    EXPECT_EQ(est.component_count, 1u);
+}
+
+
+
+TEST(Measurer, ShallowDimpleNotSplit) {
+    // A single 20 mm slab with a 2 mm-deep groove across one column. The valley is far too shallow
+    // to be two items, so the watershed must merge the markers back and keep one component.
+    PointCloud food = make_baseline(0.25);
+    for (double x = 0.0025; x <= 0.0975 + 1.0e-9; x += kCell) {
+        for (double y = 0.0025; y <= 0.0975 + 1.0e-9; y += kCell) {
+            const bool groove = std::fabs(x - 0.0525) < 1.0e-6;
+            food.points.push_back(
+                {static_cast<float>(x), static_cast<float>(y), static_cast<float>(groove ? kDimpleTop : kCuboidTop)});
+        }
+    }
+
+    auto measurer = make_measurer();
+    const auto est = measurer.set_baseline({make_baseline()}).set_food(food).run();
+    ASSERT_EQ(est.status, MeasurementStatus::kSuccess) << est.message;
+    EXPECT_EQ(est.component_count, 1u);
+    EXPECT_NEAR(est.volume_cm3, kExpectedVolumeCm3, 15.0);
 }
 
 
@@ -699,6 +801,30 @@ TEST(Measurer, SaveConfigRoundTrip) {
     EXPECT_DOUBLE_EQ(restored.config().plane_distance_threshold_m, 0.0025);
     EXPECT_DOUBLE_EQ(restored.config().integration_resolution_m, measurer.config().integration_resolution_m);
     std::remove(path.c_str());
+}
+
+TEST(Measurer, HeightWatershedSwitchJsonRoundTrip) {
+    const std::string path = "unit_config_watershed.json";
+    MeasurementConfig cfg = make_config();
+    // Save the non-default value so the round-trip is proven against the default.
+    cfg.enable_height_watershed = true;
+    FoodVolumeMeasurer measurer;
+    measurer.set_config(cfg);
+    ASSERT_TRUE(measurer.save_config_to_json(path));
+
+    FoodVolumeMeasurer restored;
+    ASSERT_TRUE(restored.load_config_from_json(path));
+    EXPECT_TRUE(restored.config().enable_height_watershed);
+
+    // A file without the key keeps the default, which leaves the split disabled.
+    const std::string partial = "unit_config_watershed_default.json";
+    {
+        std::ofstream file(partial);
+        file << "{\"voxel_size_m\":0.007}";
+    }
+    FoodVolumeMeasurer bare;
+    ASSERT_TRUE(bare.load_config_from_json(partial));
+    EXPECT_FALSE(bare.config().enable_height_watershed);
 }
 
 TEST(Measurer, SaveMiddleCloudWritesStageFiles) {
