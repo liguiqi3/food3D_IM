@@ -334,6 +334,34 @@ TEST(Measurer, CuboidEndToEnd) {
 
 
 
+TEST(Measurer, ZeroVoxelSizeSkipsDownsampling) {
+    // voxel_size_m = 0 disables voxel downsampling, so every input point survives preprocessing.
+    MeasurementConfig cfg = make_config();
+    cfg.voxel_size_m = 0.0;
+
+    FoodVolumeMeasurer measurer;
+    measurer.set_config(cfg);
+    const auto est = measurer.set_baseline({make_baseline()}).set_food(make_food()).run();
+    ASSERT_EQ(est.status, MeasurementStatus::kSuccess) << est.message;
+    EXPECT_EQ(est.downsampled_points, est.input_points);
+    EXPECT_NEAR(est.volume_cm3, kExpectedVolumeCm3, 10.0);
+}
+
+
+
+TEST(Measurer, NegativeVoxelSizeRejected) {
+    // A negative voxel size is still an invalid configuration.
+    MeasurementConfig cfg = make_config();
+    cfg.voxel_size_m = -0.001;
+
+    FoodVolumeMeasurer measurer;
+    measurer.set_config(cfg);
+    const auto est = measurer.set_baseline({make_baseline()}).set_food(make_food()).run();
+    EXPECT_EQ(est.status, MeasurementStatus::kInvalidConfig);
+}
+
+
+
 TEST(Measurer, AddBaselineFrameAccumulates) {
     auto measurer = make_measurer();
     measurer.add_baseline_frame(make_baseline());
