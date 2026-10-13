@@ -69,7 +69,7 @@ the values to override; the hole-completion safety guards remain internal consta
 
 ```cpp
 FoodVolumeMeasurer measurer;
-measurer.set_voxel_size(0.003)                       // downsampling voxel edge (m)
+measurer.set_voxel_size(0.003)                       // downsampling voxel edge (m); 0 disables downsampling
     .set_integration_resolution(0.003)               // raster cell edge (m)
     .set_height_range(0.0015, 0.05)                  // accepted food height (m); max <= 0 disables the cap
     .set_cluster_params(0.010, 8)                    // footprint DBSCAN radius + min points
