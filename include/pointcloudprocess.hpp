@@ -108,8 +108,10 @@ Plane orient_plane(const Plane& plane, const PointCloud& points);
  * @brief [zh] 体素降采样：每个被占用的体素保留其点的质心。
  * @param cloud [en] Input point cloud.
  * @param cloud [zh] 输入点云。
- * @param voxel_size [en] Voxel edge length in the cloud's units.
- * @param voxel_size [zh] 体素边长（点云单位）。
+ * @param voxel_size [en] Voxel edge length in the cloud's units; a value of 0 or less
+ *     returns an empty cloud, so callers should skip the call to keep all points.
+ * @param voxel_size [zh] 体素边长（点云单位）；取 0 或更小时返回空点云，
+ *     调用方应跳过该调用来保留全部点。
  * @return [en] Downsampled point cloud (one centroid per occupied voxel).
  * @return [zh] 降采样后的点云（每个被占用体素一个质心）。
  * @exporter

@@ -299,7 +299,7 @@ MeasurementStatus preprocess_cloud(const PointCloud& input, const MeasurementCon
     }
 
     const double scale = length_unit_to_meter_scale(cfg.input_unit);
-    if (!(scale > 0.0) || !(cfg.voxel_size_m > 0.0F)) {
+    if (!(scale > 0.0) || !(cfg.voxel_size_m >= 0.0F)) {
         return MeasurementStatus::kInvalidConfig;
     }
     if (cfg.roi &&
@@ -313,8 +313,8 @@ MeasurementStatus preprocess_cloud(const PointCloud& input, const MeasurementCon
     // Optional axis-aligned ROI crop.
     const PointCloud cropped = cfg.roi ? crop_axis_aligned(scaled, *cfg.roi) : scaled;
 
-    // Voxel downsample (PCL VoxelGrid centroid rule).
-    const PointCloud voxeled = voxel_downsample(cropped, cfg.voxel_size_m);
+    // Voxel downsample (PCL VoxelGrid centroid rule); a zero voxel size keeps every point.
+    const PointCloud voxeled = (cfg.voxel_size_m > 0.0F) ? voxel_downsample(cropped, cfg.voxel_size_m) : cropped;
 
     out.cloud = voxeled;
     out.input_points = input.points.size();

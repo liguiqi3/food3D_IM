@@ -60,6 +60,9 @@ class FoodVolumeMeasurer {
     /**
      * @brief [en] Sets the voxel size used for downsampling, in metres.
      * @brief [zh] 设置降采样体素边长（米）。
+     * @details [en] A value of 0 disables voxel downsampling and keeps every point; a negative
+     *     value is rejected as an invalid configuration.
+     * @details [zh] 取 0 表示关闭体素降采样并保留全部点；负值会被判为无效配置。
      * @exporter
      */
     FoodVolumeMeasurer& set_voxel_size(double size_m);

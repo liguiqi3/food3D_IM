@@ -147,12 +147,14 @@ enum class MeasurementStatus : std::uint8_t {
  * @details [en] Input points use `input_unit`; ROI bounds and every distance field use
  *     metres. An absent `roi` disables cropping, an empty `selected_labels` selects all
  *     eligible components, and an empty `middle_cloud_dir` disables PCD dumps. Start with
- *     defaults and change only values supported by the capture geometry.
+ *     defaults and change only values supported by the capture geometry. A `voxel_size_m` of 0
+ *     keeps every point (no downsampling).
  *     `enable_height_watershed` (default false) splits an over-merged footprint cluster at a
  *     height valley; enable it to separate nearly touching items.
  * @details [zh] 输入点坐标使用 `input_unit`；ROI 边界与距离字段始终以米计。
  *     `roi` 为空时不裁剪，`selected_labels` 为空时选择全部合格连通块，
  *     `middle_cloud_dir` 为空时不保存中间 PCD。建议从默认值开始，只调整与采集条件有关的值。
+ *     `voxel_size_m` 取 0 表示不做降采样、保留全部点。
  *     `enable_height_watershed`（默认 false）在高度凹谷处细分被过度合并的足迹簇；
  *     启用后可区分相邻食材。
  * @exporter
@@ -162,6 +164,7 @@ struct MeasurementConfig {
 
     std::optional<AxisAlignedRoi> roi;
 
+    // Voxel edge length for downsampling, in metres. A value of 0 disables downsampling.
     double voxel_size_m = volume_defaults::kVoxelSizeM;
 
     // Baseline plane fitting.

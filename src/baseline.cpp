@@ -184,7 +184,7 @@ MeasurementStatus build_baseline_model(const std::vector<PointCloud>& baseline_f
     if (baseline_frames.empty()) {
         return MeasurementStatus::kEmptyBaseline;
     }
-    if (!(cfg.integration_resolution_m > 0.0F) || !(cfg.voxel_size_m > 0.0F) ||
+    if (!(cfg.integration_resolution_m > 0.0F) || !(cfg.voxel_size_m >= 0.0F) ||
         !(cfg.plane_distance_threshold_m > 0.0F) || volume_defaults::kPlaneRansacIterations <= 0 ||
         !(volume_defaults::kBaselineMaxSurfaceHeightM > 0.0F)) {
         return MeasurementStatus::kInvalidConfig;
@@ -206,8 +206,9 @@ MeasurementStatus build_baseline_model(const std::vector<PointCloud>& baseline_f
         frames_m.push_back(scale_to_meters(frame, cfg.input_unit));
     }
 
-    // The reference plane comes from the first frame after voxel downsampling.
-    const PointCloud first_m = voxel_downsample(frames_m[0], cfg.voxel_size_m);
+    // The reference plane comes from the first frame; a zero voxel size skips downsampling.
+    const PointCloud first_m =
+        (cfg.voxel_size_m > 0.0F) ? voxel_downsample(frames_m[0], cfg.voxel_size_m) : frames_m[0];
 
     Plane plane{};
     std::vector<std::size_t> inliers;
