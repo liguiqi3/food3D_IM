@@ -1,71 +1,39 @@
-_`food_volume_measure Documentation`
-=====================================
+food3d_im
+===================
 
-_`Introduction`
----------------
+``food3d_im`` estimates the volume of food above an oven tray from two kinds of
+point cloud: one or more empty-tray frames and a frame containing food. The camera and tray
+must stay in the same coordinate frame between captures. The result is a height integral in
+cubic centimetres, accompanied by coverage and hole-filling diagnostics.
 
-food_volume_measure is a C++17 library for point-cloud food volume measurement on
-oven trays. It implements the PCD-IM (baseline-plane height-difference integral)
-method with PCL: an empty-oven baseline is discretized into a local-plane height
-map, the food cloud is voxel-downsampled and clustered in the baseline plane, and
-per-cell height differences are integrated into a volume in cubic centimeters.
+Start with :doc:`measurement <export>` for a complete C++ example. Read
+:doc:`building <components/conan>` if you need to build the package. Doxygen provides the
+API reference for ``FoodVolumeMeasurer``, ``MeasurementConfig``, and ``VolumeEstimate``.
+After a local documentation build, open ``docs/doxygen/build/docs.html`` to choose a language.
 
-_`Main Features`
+What the estimate means
+-----------------------
+
+The library fits a plane to the empty tray, stores the observed tray height in each grid cell,
+and compares food points with that measured surface. It never substitutes an ideal flat tray
+for cells where the empty capture has no data. Small enclosed gaps in the food surface may be
+filled; their volume is reported separately from the volume supported by measured points.
+
+Check ``VolumeEstimate.status`` before using any numeric result. On success,
+``volume_cm3`` is the sum of ``raw_volume_cm3`` and ``interpolated_volume_cm3``. A large
+``interpolated_cells`` count or a low ``coverage_ratio`` is a reason to inspect the input
+clouds and the intermediate PCD files, not a reason to treat the estimate as ground truth.
+
+Where to go next
 ----------------
 
-- Empty-oven baseline model with RANSAC plane fitting
-- Open3D-equivalent voxel downsampling and DBSCAN clustering
-- Component-aware conservative hole completion
-- Reference volumes (AABB / OBB / convex hull)
-- PCD loading via ``vm::load_pcd``
-- Host-only point-cloud processing (PCL); bare-metal stubs report an unsupported status
-
-_`Quick Start`
---------------
-
-.. code-block:: cpp
-
-   #include "volume_pipeline.hpp"
-   #include "volume_pointcloudprocess.hpp"
-
-   int main() {
-       vm::PointCloud baseline = vm::load_pcd("empty_oven.pcd");
-       vm::PointCloud food = vm::load_pcd("food.pcd");
-       vm::VolumePipeline pipeline;
-       vm::VolumeEstimate est =
-           pipeline.measure({baseline}, food, vm::MeasurementConfig{});
-       return est.status == vm::MeasurementStatus::kSuccess ? 0 : 1;
-   }
-
-_`Project Structure`
---------------------
-
-::
-
-   food_volume_measure/
-   ├── include/         # Public headers (volume_*.hpp)
-   ├── src/             # Implementation (volume_*.cpp)
-   ├── test_package/    # Consumer demo and unit/stress tests
-   ├── benchmark/       # Cross-platform benchmark scaffolding
-   ├── CMakeLists.txt   # CMake build configuration
-   ├── conanfile.py     # Conan package configuration
-   ├── metadata.json    # Project metadata
-   └── LICENSE          # License file
-
-_`Detailed Settings`
---------------------
-
-For detailed settings in project-level meta, conan recipe, or cmake file, see:
-
 .. toctree::
-   CMakeList <components/cmake>
-   Conanfile <components/conan>
-   Metadata <components/meta>
-   User concern contents <export>
-   :numbered:
    :maxdepth: 2
 
-_`License`
-----------
+   Measure a frame <export>
+   Build with Conan <components/conan>
+   CMake targets <components/cmake>
+   Project metadata <components/meta>
 
-This project is licensed under the Apache-2.0 License. See the LICENSE file for details.
+The package targets C++17. The PCL measurement pipeline runs on host platforms; a bare-metal
+build reports ``kUnsupportedPlatform`` for this operation.

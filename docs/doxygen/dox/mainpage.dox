@@ -1,52 +1,87 @@
 /*!
- * @mainpage food_volume_measure
+ * @mainpage food3d_im
  *
- * Point-cloud food volume measurement for oven trays (PCL-based).
+ * @section purpose_en [en] What this library measures
+ *     Given an empty-tray point cloud and a food point cloud captured in the same coordinate
+ *     frame, the library estimates the volume above the observed tray surface. It reports
+ *     cubic centimetres, per-component results, and how much of the surface was inferred
+ *     rather than measured. It is intended for host-side processing with PCL.
+ * @section purpose_zh [zh] 测量对象
+ *     输入同一坐标系下拍摄的空烤盘点云和食材点云，库会估算食材高出实测烤盘表面的体积。
+ *     结果以立方厘米表示，并给出逐食材块明细，以及多少顶面来自实测、多少来自补洞。
+ *     该测量流程依赖 PCL，在主机端运行。
  *
- * @section intro_sec [en] Overview
- *     Measures food volume in cubic centimeters from an empty-oven baseline and a food point
- *     cloud, using a baseline-plane height-difference integral (PCD-IM).
- * @section intro_sec [zh] 概述
- *     基于空炉基线与食物点云，用基准面高度差积分（PCD-IM）测量食材体积（立方厘米）。
+ * @section example_en [en] First measurement
+ *     Check file loading and the returned status before reading a volume. The default
+ *     input unit is metres; call set_input_unit(LengthUnit::kMillimeter) for millimetre
+ *     point clouds.
+ * @section example_zh [zh] 首次测量
+ *     读取文件和测量结果都需要检查状态。输入点云默认以米为单位；若坐标使用毫米，
+ *     请先调用 set_input_unit(LengthUnit::kMillimeter)。
+ * @code{.cpp}
+ * #include "measurement.hpp"
+ * #include <iostream>
  *
- * @section features_sec [en] Features
- *     - Empty-oven baseline model with RANSAC plane fitting
- *     - Open3D-equivalent voxel downsampling and DBSCAN clustering
- *     - Component-aware conservative hole completion
- *     - Reference volumes (AABB / OBB / convex hull)
- *     - PCD loading via vm::load_pcd
- * @section features_sec [zh] 特性
- *     - 基于 RANSAC 平面拟合的空炉基线模型
- *     - 与 Open3D 等价的体素降采样与 DBSCAN 聚类
- *     - 组件感知的保守补洞
- *     - 参考体积（AABB / OBB / 凸包）
- *     - 通过 vm::load_pcd 载入 PCD
+ * int main() {
+ *     const PointCloud empty = load_pcd("empty_tray.pcd");
+ *     const PointCloud food = load_pcd("food.pcd");
+ *     if (empty.points.empty() || food.points.empty()) return 1;
  *
- * @section pipeline_sec [en] Pipeline
- *     - vm::load_pcd / vm::preprocess_cloud: load and voxel-downsample the point cloud
- *     - vm::build_baseline_model: empty-oven baseline height map
- *     - vm::extract_food_components: foreground clustering and component selection
- *     - vm::measure_component_volume: height-difference integration with hole completion
- *     - vm::VolumePipeline::measure: end-to-end composition
- * @section pipeline_sec [zh] 流水线
- *     - vm::load_pcd / vm::preprocess_cloud：载入并体素降采样点云
- *     - vm::build_baseline_model：空炉基线高度图
- *     - vm::extract_food_components：前景聚类与组件选择
- *     - vm::measure_component_volume：高度差积分与补洞
- *     - vm::VolumePipeline::measure：端到端组合
+ *     const VolumeEstimate result =
+ *         FoodVolumeMeasurer().set_baseline({empty}).set_food(food).run();
+ *     if (result.status != MeasurementStatus::kSuccess) {
+ *         std::cerr << status_to_string(result.status) << '\n';
+ *         return 1;
+ *     }
+ *     std::cout << result.volume_cm3 << " cm3\n";
+ * }
+ * @endcode
  *
- * @section usage_sec usage
- *     include headers in code:
- *     @code{.cpp}
- *     #include "volume_pipeline.hpp"
- *     #include "volume_pointcloudprocess.hpp"
+ * @section contract_en [en] Input and result contract
+ *     - Keep the camera and tray fixed between empty and food captures. All input frames
+ *       must use the same LengthUnit. ROI bounds and distance parameters use metres.
+ *     - The empty frames must cover the food footprint. A missing baseline cell is not
+ *       replaced with an ideal plane; inspect VolumeEstimate::missing_baseline_cells.
+ *     - Check VolumeEstimate::status first. Numeric results are NaN on failure.
+ *     - VolumeEstimate::raw_volume_cm3 comes from measured top cells;
+ *       VolumeEstimate::interpolated_volume_cm3 comes from accepted filled cells.
+ *       Their sum is VolumeEstimate::volume_cm3 on success.
+ * @section contract_zh [zh] 输入与结果约定
+ *     - 空盘帧与食材帧之间保持相机、烤盘位置不变。所有点云使用同一 LengthUnit。
+ *       ROI 边界和距离参数始终用米表示。
+ *     - 空盘帧需要覆盖食材足迹；缺少基线的栅格不会用理想平面代替。
+ *       可查看 VolumeEstimate::missing_baseline_cells。
+ *     - 先检查 VolumeEstimate::status；失败时数值结果为 NaN。
+ *     - VolumeEstimate::raw_volume_cm3 对应实测顶面，
+ *       VolumeEstimate::interpolated_volume_cm3 对应通过检查的补洞顶面；
+ *       成功时两者之和为 VolumeEstimate::volume_cm3。
  *
- *     vm::PointCloud baseline = vm::load_pcd("empty_oven.pcd");
- *     vm::PointCloud food = vm::load_pcd("food.pcd");
- *     vm::VolumePipeline pipeline;
- *     vm::VolumeEstimate est = pipeline.measure({baseline}, food, vm::MeasurementConfig{});
- *     @endcode
+ * @section method_en [en] How the estimate is formed
+ *     A RANSAC plane defines the tray coordinate frame. Empty frames supply median heights
+ *     per grid cell. The food frame is unit-normalized, optionally cropped, voxel-downsampled,
+ *     and stripped of its dominant background plane. Surviving points are compared with the
+ *     measured baseline and clustered by their footprint on that plane; when
+ *     `enable_height_watershed` is enabled (opt-in) a cluster is split further where its top
+ *     surface dips into a height valley between two peaks. For every accepted
+ *     top-surface cell, the height above the baseline is multiplied by cell area. Enclosed
+ *     holes may be filled only within a single component and only when the hole guards pass.
+ * @section method_zh [zh] 体积如何得到
+ *     先用 RANSAC 平面建立烤盘坐标系，空盘帧在每个栅格内提供中值高度。食材帧经过单位换算、
+ *     可选裁剪、体素降采样和背景平面去除后，与实测基线比较；剩余点按平面足迹聚类，
+ *     启用 `enable_height_watershed`（可选，默认关闭）时再按顶表面在两峰之间的高度凹谷细分为子连通块。
+ *     每个有效顶面栅格的高度差乘以栅格面积，累加得到体积。封闭孔洞只会在单个连通块内部、
+ *     且满足保护条件时补全。
  *
- * @author Chen Zhang <chen2.zhang@szhittech.com>
+ * @section inspect_en [en] Inspecting intermediate clouds
+ *     Set FoodVolumeMeasurer::set_middle_cloud_dir to a nonempty path. A successful run writes
+ *     stage PCD files there. Compare 5_top_surface.pcd (measured cells) with
+ *     6_hole_filled_surface.pcd (measured and accepted filled cells). Set an empty path to
+ *     disable the dump. The files use world coordinates.
+ * @section inspect_zh [zh] 检查中间点云
+ *     将 FoodVolumeMeasurer::set_middle_cloud_dir 设为非空目录。成功测量后可比较
+ *     5_top_surface.pcd（实测顶面）与 6_hole_filled_surface.pcd（实测加已补全顶面）。
+ *     空路径表示不保存；这些 PCD 使用世界坐标。
+ *
+ * @see FoodVolumeMeasurer, MeasurementConfig, VolumeEstimate
  * @since 1.0
  */

@@ -6,15 +6,11 @@
 #include <memory>
 #include <utility>
 #include <vector>
-#include "volume_baseline.hpp"
-#include "volume_internal.hpp"
-#include "volume_log.hpp"
-#include "volume_pointcloudprocess.hpp"
+#include "baseline.hpp"
+#include "grid.hpp"
+#include "log.hpp"
+#include "pointcloudprocess.hpp"
 // Conan::ImportEnd
-
-
-
-namespace vm {
 
 
 
@@ -69,6 +65,11 @@ PlaneFrame make_frame(double nx, double ny, double nz, double ox, double oy, dou
 } // namespace
 
 
+
+namespace {
+
+// Plane-frame construction, baseline rasterisation and the plane ROI, used only by
+// build_baseline_model below. 平面坐标系构建、基线栅格化与平面 ROI，仅供下方使用。
 
 /**
  * @brief [en] Builds the local orthonormal (u,v,n) frame for a plane and an origin.
@@ -146,8 +147,10 @@ bool build_plane_roi(BaselineData& baseline, double border_margin_m) {
 
     const double u_min = baseline.bbox_u_min_m + border_margin_m;
     const double u_max = baseline.bbox_u_max_m - border_margin_m;
-    const double v_min = baseline.bbox_v_min_m + border_margin_m;
-    const double v_max = baseline.bbox_v_max_m - border_margin_m;
+    //const double v_min = baseline.bbox_v_min_m + border_margin_m;
+    //const double v_max = baseline.bbox_v_max_m - border_margin_m;
+    const double v_min = baseline.bbox_v_min_m;
+    const double v_max = baseline.bbox_v_max_m;
     if (u_min >= u_max || v_min >= v_max) {
         return false;
     }
@@ -159,9 +162,7 @@ bool build_plane_roi(BaselineData& baseline, double border_margin_m) {
     baseline.roi.border_margin_m = border_margin_m;
     return true;
 }
-
-
-
+} // namespace
 /**
  * @brief [en] Builds the empty-oven baseline model from one or more baseline frames.
  * @brief [zh] 从一帧或多帧空炉点云建立空炉基线模型。
@@ -183,9 +184,9 @@ MeasurementStatus build_baseline_model(const std::vector<PointCloud>& baseline_f
     if (baseline_frames.empty()) {
         return MeasurementStatus::kEmptyBaseline;
     }
-    if (!(cfg.integration_resolution_m > 0.0F) || !(cfg.voxel_size_m > 0.0F) ||
-        !(cfg.plane_distance_threshold_m > 0.0F) || cfg.plane_ransac_iterations <= 0 ||
-        !(cfg.baseline_max_surface_height_m > 0.0F)) {
+    if (!(cfg.integration_resolution_m > 0.0F) || !(cfg.voxel_size_m >= 0.0F) ||
+        !(cfg.plane_distance_threshold_m > 0.0F) || volume_defaults::kPlaneRansacIterations <= 0 ||
+        !(volume_defaults::kBaselineMaxSurfaceHeightM > 0.0F)) {
         return MeasurementStatus::kInvalidConfig;
     }
     for (const auto& frame : baseline_frames) {
@@ -205,13 +206,14 @@ MeasurementStatus build_baseline_model(const std::vector<PointCloud>& baseline_f
         frames_m.push_back(scale_to_meters(frame, cfg.input_unit));
     }
 
-    // The reference plane comes from the first frame after voxel downsampling.
-    const PointCloud first_m = voxel_downsample(frames_m[0], cfg.voxel_size_m);
+    // The reference plane comes from the first frame; a zero voxel size skips downsampling.
+    const PointCloud first_m =
+        (cfg.voxel_size_m > 0.0F) ? voxel_downsample(frames_m[0], cfg.voxel_size_m) : frames_m[0];
 
     Plane plane{};
     std::vector<std::size_t> inliers;
-    MeasurementStatus st =
-        fit_plane_ransac(first_m, cfg.plane_distance_threshold_m, cfg.plane_ransac_iterations, plane, inliers);
+    MeasurementStatus st = fit_plane_ransac(first_m, cfg.plane_distance_threshold_m,
+                                            volume_defaults::kPlaneRansacIterations, plane, inliers);
     if (st != MeasurementStatus::kSuccess) {
         return st;
     }
@@ -238,7 +240,8 @@ MeasurementStatus build_baseline_model(const std::vector<PointCloud>& baseline_f
         build_plane_frame(plane, Point3f{static_cast<float>(ox), static_cast<float>(oy), static_cast<float>(oz)});
     data->cell_size_m = cfg.integration_resolution_m;
 
-    st = rasterize_baseline(frames_m, data->frame, data->cell_size_m, cfg.baseline_max_surface_height_m, *data);
+    st = rasterize_baseline(frames_m, data->frame, data->cell_size_m, volume_defaults::kBaselineMaxSurfaceHeightM,
+                            *data);
     if (st != MeasurementStatus::kSuccess) {
         return st;
     }
@@ -254,7 +257,3 @@ MeasurementStatus build_baseline_model(const std::vector<PointCloud>& baseline_f
     return MeasurementStatus::kSuccess;
 #endif // __ARM_EABI__
 }
-
-
-
-} // namespace vm

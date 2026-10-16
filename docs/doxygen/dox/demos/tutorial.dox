@@ -1,17 +1,21 @@
 /**
  * @example tutorial.dox
  *
- * A complete example of measuring food volume with food_volume_measure.
- *
- * This example loads an empty-oven baseline and a food point cloud from PCD
- * files, then runs the PCD-IM pipeline and prints the measured volume.
+ * @par [en] PCD measurement example
+ *     This example reads one empty-tray frame and one food frame, then prints the observed,
+ *     filled, and total volume. Check both PCD reads before running the pipeline. A successful
+ *     result can still contain inferred cells; inspect `interpolated_cells` and
+ *     `missing_baseline_cells` when reviewing a scan.
+ * @par [zh] PCD 测量示例
+ *     示例读取一帧空烤盘和一帧食材点云，分别打印实测、补洞和总体积。运行前先检查两个
+ *     PCD 是否读取成功。即使状态为成功，结果也可能含推算栅格；检查
+ *     `interpolated_cells` 和 `missing_baseline_cells` 可帮助判断输入质量。
  *
  * @include demo.cxx
  *
- * @par Description:
- * - First, call vm::load_pcd() to load the baseline and food point clouds.
- * - Then, call VolumePipeline::measure() to run the end-to-end pipeline.
- * - Finally, read the volume from the returned VolumeEstimate.
- *
- * @note Link against the food_volume_measure library when compiling.
+ * @note [en] Link against `food3d_im::food3d_im` when consuming the
+ *     installed CMake package. Input points default to metres; change the input unit for
+ *     millimetre PCD files. ROI bounds and distance parameters remain in metres.
+ * @note [zh] 使用已安装的 CMake 包时链接 `food3d_im::food3d_im`。
+ *     点云默认以米为单位；毫米 PCD 需修改输入单位。ROI 边界和距离参数仍以米表示。
  */

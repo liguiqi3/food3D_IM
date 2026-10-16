@@ -128,6 +128,7 @@ class PackageTestConan(ConanFile):
         # defensive logic for cross_building
         if cross_building(self):
             self.output.info("Cross-compilation detect. Skipping test execution.")
+            self._remove_entries()
             return
 
         # scripting in test_package/main.cpp
@@ -234,7 +235,7 @@ class PackageTestConan(ConanFile):
 
             _f_unit = self.recipe_folder + sep + 'test' + sep + 'unit'
             if self.metadata.get('activate_code_coverage'):
-                _files = [str(_) for _ in Path(_f_unit).rglob('*.cpp')]
+                _files = [str(_) for _ in Path(_f_unit).rglob('*.cpp') if not _.name.startswith('ucov_')]
                 _cache = [[_a := _.split(sep), (sep.join(_a[:-1]), _a[-1])][-1] for _ in _files]
                 for _test_src, _test_ucov in zip(_files, _cache):
                     with open(_test_src, 'r') as f:

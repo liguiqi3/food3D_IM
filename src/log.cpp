@@ -1,20 +1,16 @@
 // Conan::ImportStart
-#include "volume_log.hpp"
+#include "log.hpp"
 #include <string>
 // Conan::ImportEnd
 
 #ifndef __ARM_EABI__
-#include <ctime>
+#include <time.h>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <mutex>
 #include <sstream>
 #endif
-
-
-
-namespace vm {
 
 
 
@@ -75,13 +71,13 @@ const char* level_name(LogLevel level) {
 }
 
 std::string timestamp() {
-    const std::time_t now = std::time(nullptr);
-    std::tm* t = std::localtime(&now);
-    if (t == nullptr) {
+    const time_t now = time(nullptr);
+    tm t{};
+    if (localtime_r(&now, &t) == nullptr) {
         return "0000-00-00 00:00:00";
     }
     std::ostringstream stream;
-    stream << std::put_time(t, "%Y-%m-%d %H:%M:%S");
+    stream << std::put_time(&t, "%Y-%m-%d %H:%M:%S");
     return stream.str();
 }
 
@@ -147,13 +143,13 @@ void log_write(LogLevel level, const std::string& message) {
     const std::string line = "[" + timestamp() + "] [" + level_name(level) + "] " + message;
     if (g_log_console) {
         if (level == LogLevel::kWarning || level == LogLevel::kError) {
-            std::cerr << line << std::endl;
+            std::cerr << line << '\n';
         } else {
-            std::cout << line << std::endl;
+            std::cout << line << '\n';
         }
     }
     if (g_log_file.is_open()) {
-        g_log_file << line << std::endl;
+        g_log_file << line << '\n';
         g_log_file.flush();
     }
 }
@@ -181,7 +177,3 @@ void log_error(const std::string& message) { log_write(LogLevel::kError, message
 
 
 #endif // __ARM_EABI__
-
-
-
-} // namespace vm

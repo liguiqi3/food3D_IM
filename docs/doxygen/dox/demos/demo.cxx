@@ -1,29 +1,28 @@
-// demo.cxx — PCD-IM food volume measurement example.
-#include "volume_pipeline.hpp"
-#include "volume_pointcloudprocess.hpp"
+// Example: one empty tray frame and one food frame in the same camera coordinates.
+#include "measurement.hpp"
 
 #include <iostream>
-#include <vector>
 
 int main() {
-    // Load the empty-oven baseline and the food point cloud from PCD files.
-    const vm::PointCloud baseline = vm::load_pcd("empty_oven.pcd");
-    const vm::PointCloud food = vm::load_pcd("food.pcd");
-    if (baseline.points.empty() || food.points.empty()) {
-        std::cerr << "failed to load PCD inputs" << std::endl;
+    const PointCloud empty = load_pcd("empty_tray.pcd");
+    const PointCloud food = load_pcd("food.pcd");
+    if (empty.points.empty() || food.points.empty()) {
+        std::cerr << "Could not read the input PCD files\n";
         return 1;
     }
 
-    // Run the end-to-end PCD-IM measurement.
-    vm::VolumePipeline pipeline;
-    const vm::VolumeEstimate est =
-        pipeline.measure(std::vector<vm::PointCloud>{baseline}, food, vm::MeasurementConfig{});
-
-    if (est.status != vm::MeasurementStatus::kSuccess) {
-        std::cerr << "measurement failed: " << vm::status_to_string(est.status) << std::endl;
+    FoodVolumeMeasurer measurer;
+    // For millimetre PCD coordinates, add:
+    // measurer.set_input_unit(LengthUnit::kMillimeter);
+    const VolumeEstimate result = measurer.set_baseline({empty}).set_food(food).run();
+    if (result.status != MeasurementStatus::kSuccess) {
+        std::cerr << status_to_string(result.status) << '\n';
         return 1;
     }
 
-    std::cout << "volume_cm3: " << est.volume_cm3 << std::endl;
-    return 0;
+    std::cout << "measured: " << result.raw_volume_cm3 << " cm3\n"
+              << "filled:   " << result.interpolated_volume_cm3 << " cm3\n"
+              << "total:    " << result.volume_cm3 << " cm3\n"
+              << "filled cells: " << result.interpolated_cells << '\n'
+              << "missing baseline cells: " << result.missing_baseline_cells << '\n';
 }

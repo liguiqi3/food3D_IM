@@ -1,16 +1,15 @@
-# A Modern C/CPP Library Build System
+# food3d_im
 
-This project is a C/C++ library built using Conan 2, featuring modern C and C++ standard support and module 
-capabilities.
+Built with Conan 2 and CMake. Targets C++17, with optional C++20/23 features such as modules.
 
 ## Badges
 
-![License](https://img.shields.io/github/license/CubicZebra/fcpp?color=blue&label=license)
-![CodeFactor Grade](https://img.shields.io/codefactor/grade/github/CubicZebra/fcpp?label=code%20quality&logo=codefactor)
+![License](https://img.shields.io/github/license/HeT-FTI/food3d_im?color=blue&label=license)
+![CodeFactor Grade](https://img.shields.io/codefactor/grade/github/HeT-FTI/food3d_im?label=code%20quality&logo=codefactor)
 ![C++](https://img.shields.io/badge/C%2B%2B-17%2F20%2F23-blue?logo=c%2B%2B&logoColor=white)
 ![Modules](https://img.shields.io/badge/modules-C%2B%2B23%20experimental-purple?logo=c%2B%2B&logoColor=white)
-![CI](https://github.com/CubicZebra/fcpp/actions/workflows/ci-build-test.yml/badge.svg)
-![CI](https://github.com/CubicZebra/fcpp/actions/workflows/docs-build.yml/badge.svg)
+![CI](https://github.com/HeT-FTI/food3d_im/actions/workflows/ci-build-test.yml/badge.svg)
+![CI](https://github.com/HeT-FTI/food3d_im/actions/workflows/docs-build.yml/badge.svg)
 ![CMake](https://img.shields.io/badge/cmake-3.28%2B-orange?logo=cmake)
 ![Python](https://img.shields.io/badge/python-3.10%2B-blue?logo=python)
 ![Doxygen](https://img.shields.io/badge/docs-Doxygen-green?logo=doxygen&logoColor=white)
@@ -19,86 +18,92 @@ capabilities.
 ## Project Overview
 
 - **Language**: C/C++
-- **Library Build System**: Python with Conan 2.0
-- **File Build System**: Doxygen, Graphviz, Sphinx
-- **Module Support**: Optionally activated, when C++ standard ≥ 23
-- **Metadata-Driven**: `metadata.json` is the single source of truth (build, deps, docs, CI)
+- **Build**: Conan 2 + CMake
+- **Docs**: Doxygen, Graphviz, Sphinx
+- **Modules**: optional, enabled from C++23 up
+- **Metadata-Driven**: `metadata.json` holds the build, dependency, docs and CI settings
 - **Skills & Agent**: library-level `het-*` skills + routing agent (`.github/skills/`)
-- **Component Structure**:
-    - pairwise header and source assumption
-    - suffix distinguishment, (.h, .c) for C part, and (.hpp, .cpp) for C++ part
-    - documenting system uses .dox for pure docstring, .cxx for examples codes
+- **Layout**:
+    - headers and sources are named in pairs
+    - the suffix tells the languages apart: (.h, .c) for C, (.hpp, .cpp) for C++
+    - docs use .dox for doc-only pages and .cxx for example code
 
-## Library: PCD-IM Food Volume Measurement
+## Library: IM Food Volume Measurement
 
-`food_volume_measure` measures food volume in cubic centimetres from a fixed oven-tray depth camera.
-It implements the PCD-IM (baseline-plane height-difference integral) algorithm:
+`food3d_im` measures food volume in cubic centimetres from a fixed oven-tray depth camera.
+The IM (baseline-plane height-difference integral) pipeline is:
 
 1. Build an empty-oven **baseline height map**: fit the tray plane from the first empty frame,
    project every empty frame into the same local `(u, v)` frame, and take the per-cell median height.
 2. Remove the dominant background plane(s) from the food frame, then filter food points by their
    baseline-relative height difference.
 3. Cluster the surviving points in **baseline-plane (u, v) coordinates** to separate multiple food items.
-4. Rasterize one top surface point per cell and integrate
+   With `enable_height_watershed` enabled (opt-in, off by default) a cluster whose top surface dips into
+   a **height valley** between two peaks is split further, so two nearly touching items are reported separately.
+4. Keep one top-surface point per cell and integrate
    `volume = Σ (food_top − baseline_height) × cell_size²`.
 5. Conservatively complete enclosed depth holes **inside a single component** with inverse-distance
    interpolation (small, smooth holes) or a guarded quadratic surface fit (larger specular holes).
    Measured and interpolated cells are reported separately.
 
 ```cpp
-fcpp::MeasurementConfig cfg;               // defaults match the PCD-IM reference
-fcpp::VolumePipeline pipeline;
-std::vector<fcpp::PointCloud> baseline{ /* one or more empty-oven frames */ };
-fcpp::PointCloud food{ /* one food frame */ };
-fcpp::VolumeEstimate est = pipeline.measure(baseline, food, cfg);
+FoodVolumeMeasurer measurer;          // defaults match the IM reference
+measurer.set_baseline({empty_oven_frame}) // one or more empty-oven frames
+    .set_food(food_frame)                 // the food frame
+    .set_input_unit(LengthUnit::kMillimeter); // optional: inputs in mm
+VolumeEstimate est = measurer.run();
 // est.volume_cm3, est.raw_volume_cm3, est.interpolated_volume_cm3, est.component_count, ...
 ```
 
-- All geometry is in metres internally; set `cfg.input_unit` when inputs are millimetres.
+- All geometry is in metres internally; set the input unit when inputs are millimetres.
 - At least one baseline frame is required; a baseline cell that is missing from the empty-oven map
   is never replaced with an ideal zero plane.
 - Hole filling is intentionally conservative: only holes whose boundary belongs to exactly one food
   component are considered, and several area / rim / fit-safety guards must pass.
 
-### Atomic algorithm API
+### Configuring the measurement
 
-Beyond `VolumePipeline`, the library exposes each stage as an independently reusable algorithm. These are
-the units used for focused testing and advanced composition:
-
-| Header | Public API |
-|--------|-----------|
-| `volume_pointcloudprocess.hpp` | `preprocess_cloud` — validate/unit-normalize/ROI-crop/voxel-downsample; `voxel_downsample` — Open3D-equivalent voxel centroid downsample; `dbscan_labels` — Open3D-equivalent density clustering; `fit_plane_ransac` — plane estimation; `remove_dominant_plane` — background removal. |
-| `volume_baseline.hpp` | `build_baseline_model` — build a reusable, opaque `BaselineModel`. |
-| `volume_component.hpp` | `extract_food_components` — filter, cluster, and select foreground food components. |
-| `volume_integrator.hpp` | `measure_component_volume` — integrate baseline-relative heights with hole completion. |
+`FoodVolumeMeasurer` has chainable setters for the common parameters, `set_config` for a full
+`MeasurementConfig`, and JSON load/save for its configurable fields. JSON files may contain only
+the values to override; the hole-completion safety guards remain internal constants:
 
 ```cpp
-// Build a reusable baseline once, then measure one or more food frames against it.
-fcpp::BaselineModel baseline;
-fcpp::build_baseline_model(baseline_frames, orientation, cfg, baseline);
-
-fcpp::FoodComponents components;
-fcpp::extract_food_components(food_after_plane_removal, baseline, cfg, components);
-
-fcpp::ComponentVolumeEstimate volume;
-fcpp::measure_component_volume(components, baseline, cfg, volume);
-// volume.volume_cm3, volume.raw_volume_cm3, volume.interpolated_volume_cm3, ...
+FoodVolumeMeasurer measurer;
+measurer.set_voxel_size(0.003)                       // downsampling voxel edge (m); 0 disables downsampling
+    .set_integration_resolution(0.003)               // raster cell edge (m)
+    .set_height_range(0.0015, 0.05)                  // accepted food height (m); max <= 0 disables the cap
+    .set_cluster_params(0.010, 8)                    // footprint DBSCAN radius + min points
+    .set_plane_distance_threshold(0.003)             // background-plane RANSAC threshold (m)
+    .set_roi(roi)                                    // optional axis-aligned crop before downsampling
+    .load_config_from_json("measurement_config.json"); // or set everything from JSON
 ```
 
-Implementation-only details (plane-local frames, grid keys, ROI bounds, height maps, hole candidates) stay
-private to `src/` and are never part of the installed headers.
+Implementation-only details (plane-local frames, grid keys, ROI bounds, height maps, hole
+candidates, baseline rasters) stay private to `src/` and are never part of the installed
+headers.
+
+`include/pointcloudprocess.hpp` additionally exposes the fine-grained point-cloud
+operators the pipeline is built from — unit scaling, axis-aligned cropping, RANSAC plane
+fitting and orientation, voxel downsampling, DBSCAN labelling, background-plane removal, and
+the AABB / OBB / convex-hull reference volumes — so they can be reused and tested on their own.
+
+An ROI object enables cropping; an empty `selected_labels` selects all eligible food components.
+The secondary-plane removal uses `plane_distance_threshold_m`. Setting `middle_cloud_dir`
+enables stage PCD output; an empty path disables it. `5_top_surface.pcd` contains the measured
+top-surface cells before hole completion, and `6_hole_filled_surface.pcd` contains the full top
+surface after completion. Both use world coordinates.
 
 ## Features
 
-- Conan-based modern dependency management
+- Dependency management with Conan
 - Supports C++ standards 17, 20, and 23
 - Automatic module file generation (`.ixx`/`.cppm`) from headers/sources
-- Cross-platform compatibility (Windows, Linux, macOS)
+- Builds on Windows, Linux and macOS
 - Dual C and C++ interfaces with separate linkage targets
 - Doxygen annotation support for object exporting (`@exporter`, `@attacher`)
-- Automation documenting system via Doxygen and Sphinx
-- Importation, derivation and call relationship illustration through Graphviz
-- `metadata.json` as the single source of truth (build / deps / docs / CI)
+- Automated docs via Doxygen and Sphinx
+- Import, derivation and call graphs via Graphviz
+- `metadata.json` as the one place holding build / deps / docs / CI settings
 - Library-level VS Code skills + routing agent (`.github/skills/`, `/het-*` slash commands)
 - Metadata + gitmoji driven CI/CD orchestration (GitHub Actions)
 - Cross-compilation & on-board benchmark framework (`benchmark/`)
@@ -106,14 +111,14 @@ private to `src/` and are never part of the installed headers.
 
 ## Agentic Coding Workspace
 
-The template reserves `/workspace/` (declared in `.gitignore`) for agent-generated work products produced
+This repository reserves `/workspace/` (declared in `.gitignore`) for agent-generated work products produced
 during Agentic Coding sessions — e.g., implementation plans, test contracts, audit reports, and other
 intermediate artifacts. Keep such working files under `/workspace/` so they never pollute the tracked
 source tree.
 
 ## Skills & Agent (VS Code)
 
-The template ships a library-level skills system under `.github/skills/` — **15 `het-*` skills plus one
+This repository ships a library-level skills system under `.github/skills/` — **15 `het-*` skills plus one
 routing agent**, all invocable from Copilot Chat by typing `/`:
 
 | Family | Skills | Audience |
@@ -130,7 +135,7 @@ composite tasks (e.g. *"add a module, test it, and commit"*). See `.github/skill
 
 - Python 3.10+ (Conan tooling)
 - Conan 2.0+
-- Compatible C/C++ compiler:
+- A C/C++ compiler:
     - GCC
     - Clang
     - MSVC
@@ -169,20 +174,23 @@ as a **soft rule** the emoji also triggers from anywhere in the message:
 > (commit-lint & schema gates always run on push/PR; build/tests/security shift-left on PRs).
 > `release` and `docs` require both the gitmoji and the switch (`build_type` must match too).
 
-## Crash Course of Build
+## Build Cheat Sheet
 
-### 1. Build then test your library
+### 1. Build the package and run the consumer check
 
-inplace build and test
+From the repository root:
 
 ```bash
-conan create . -s build_type=Debug --build=missing
+conan create . -s build_type=Debug --build=missing -c tools.build:jobs=4
 ```
+
+The full CTest suite runs only when `trigger_tests` is enabled in `metadata.json`.
 
 cross-build to host device (assume toolchain and profile are ready):
 
 ```bash
-conan create . -pr:b=default -pr:h=arm_profile -s build_type=Debug --build=missing -tf=""
+conan create . -pr:b=default -pr:h=arm_profile -s build_type=Debug --build=missing \
+    -c tools.build:jobs=4 -tf=""
 ```
 
 ### 2. Build documentations
@@ -243,7 +251,7 @@ CONTAINER_ENGINE=podman bash .github/misc/run-megalinter.sh   # Podman users
 project-root/
 ├── conanfile.py              # Conan recipe
 ├── CMakeLists.txt            # CMake build framework
-├── metadata.json             # Project metadata configuration (single source of truth)
+├── metadata.json             # Package identity and all build/deps/docs switches
 ├── conandata.yml             # Dependency specifications, Conan plugin support
 ├── package.json              # Node-side tooling deps (commitlint / semantic-release / ajv)
 ├── CHANGELOG.md              # Auto-generated by semantic-release (init tag required)
@@ -366,4 +374,3 @@ Possible frame design/validation on Apple Clang compiler (raised from dlib requi
 ## License
 
 [Apache-2.0] - See included LICENSE file for details.
-

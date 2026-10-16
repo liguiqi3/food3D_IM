@@ -34,9 +34,9 @@ def _inherit_root_metadata():
     return _meta
 
 
-_hit_com_tag = re.compile(r" \* @")
-_hit_lang_tag = re.compile(rf"( \* @[a-z]+).*\[({'|'.join(_inherit_root_metadata().get('doc_languages'))})] ")
-_hit_free_tag = re.compile(r" \* [^@]+")
+_hit_com_tag = re.compile(r"\s*\* @")
+_hit_lang_tag = re.compile(rf"(\s*\* @[a-z]+).*\[({'|'.join(_inherit_root_metadata().get('doc_languages'))})] ")
+_hit_free_tag = re.compile(r"\s*\* [^@]+")
 _hit_file_start = re.compile(r"\n?/\*!")
 _hit_since_start = re.compile(r"\n?/\*\*")
 language_map = {'en': 'English', 'zh': 'Chinese', 'jp': 'Japanese'}
@@ -74,9 +74,14 @@ def _no_recursive_clean_img(x: str):
             os.remove(x + sep + f)
 
 
-def _idx_slicer(x: np.ndarray) -> list[list[int]]:
+def _idx_slicer(x: np.ndarray, lines: list[str]) -> list[list[int]]:
     res, _in_selection = [], False
     for i, v in enumerate(x):
+        # Language blocks belong to one comment only. Otherwise a final [zh] tag
+        # can consume the closing */ and every declaration after it.
+        if lines[i].lstrip().startswith('*/'):
+            _in_selection = False
+            continue
         if not (v[0] == True and v[1] == True and v[2] == False):
             if v[0] == True and v[1] == False and v[2] == False:
                 _in_selection = False
@@ -102,7 +107,7 @@ def _language_filter(lines: list[str], langs: list[str], lang_tag: Language) -> 
     container = []
     _refs = [[_hit_com_tag.match(l), _hit_lang_tag.match(l), _hit_free_tag.match(l)] for l in lines]
     _refs_bool = np.array([[j is not None for j in i] for i in _refs])
-    _idx_sets = _idx_slicer(_refs_bool)
+    _idx_sets = _idx_slicer(_refs_bool, lines)
     _lang_involved_lines, _lang_tag_hit_line = _determine_sub_groups(_idx_sets, langs, _refs)
     _all_lang_involved_lines = []
 
@@ -328,19 +333,23 @@ class AutomationDoc:
 
     def sphinx_automation(self):
         _path = sep.join(_root_path_list + ['docs', 'sphinx'])
-        subprocess.run(["make", "-C", _path, "clean"])
-        subprocess.run(["make", "-C", _path, "gettext"])
+        subprocess.run(["make", "-C", _path, "clean"], check=True)
+        subprocess.run(["make", "-C", _path, "-e", "SPHINXOPTS=-D language=en", "gettext"], check=True)
         _cmd = ["sphinx-intl", "update", "-p", _path + sep + "build" + sep + "gettext", "-d", _path + sep + "locales"]
         for _ in self.meta.get('doc_languages'):
             if _ != 'en':
                 _cmd.append('-l')
                 _cmd.append(lang_tag_map[_])
-        subprocess.run(_cmd)
+        subprocess.run(_cmd, check=True)
+        subprocess.run(["sphinx-intl", "build", "-d", _path + sep + "locales"], check=True)
         for _ in self.meta.get('doc_languages'):
             if _ != 'en':
-                subprocess.run(["make", "-C", _path, "-e", f"SPHINXOPTS=-D language={lang_tag_map[_]}", "html"])
-        subprocess.run(["make", "-C", _path, "clean"])
-        subprocess.run(["make", "-C", _path, "html"])
+                subprocess.run(
+                    ["make", "-C", _path, "-e", f"SPHINXOPTS=-D language={lang_tag_map[_]}", "html"],
+                    check=True,
+                )
+        subprocess.run(["make", "-C", _path, "clean"], check=True)
+        subprocess.run(["make", "-C", _path, "html"], check=True)
 
     def _copy_images_for_doxygen_and_sphinx(self):
         # # customize prefix syntax here
@@ -463,7 +472,7 @@ class AutomationDoc:
         for _lang in self.meta.get('doc_languages'):
             _f_out = _build_folder + sep + _lang
             for _ver in self.meta.get('doc_versions'):
-                subprocess.run(["doxygen", DOXYFILE_IN], cwd=Path(_f_out + sep + f'v{_ver}'))
+                subprocess.run(["doxygen", DOXYFILE_IN], cwd=Path(_f_out + sep + f'v{_ver}'), check=True)
                 print(f"Doxygen build system: Documentation of [{_lang}, v{_ver}] successfully generated")
 
     def _doxygen_export_navigation(self):

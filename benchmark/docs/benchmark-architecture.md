@@ -28,7 +28,7 @@ GitHub push / workflow_dispatch
         v
 HETAI CI self-runner
         |
-        | 1. conan create food_volume_measure/0.1.0
+        | 1. conan create food3d_im/0.1.0
         | 2. benchmark no-flash build
         | 3. package artifacts
         v

@@ -1,14 +1,14 @@
 # SOME DESCRIPTIVE TITLE.
-# Copyright (C) 2025, fcpp-innovation
-# This file is distributed under the same license as the fcpp package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2025.
+# Copyright (C) 2026, HeT-FTI
+# This file is distributed under the same license as the food3d_im
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
 #
-#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: fcpp 1.0\n"
+"Project-Id-Version: food3d_im 1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-07 10:20+0800\n"
+"POT-Creation-Date: 2026-09-30 14:36+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: zh_CN\n"
@@ -17,134 +17,94 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.17.0\n"
+"Generated-By: Babel 2.18.0\n"
 
-#: ../../source/index.rst:60
-msgid "CMakeList"
-msgstr "CMake 构建列表"
+#: ../../home/min/project/food3d_im/docs/sphinx/source/index.rst:30
+msgid "Measure a frame"
+msgstr "测量一帧点云"
 
-#: ../../source/index.rst:60
-msgid "Conanfile"
-msgstr "Conan 依赖配置"
+#: ../../home/min/project/food3d_im/docs/sphinx/source/index.rst:30
+msgid "Build with Conan"
+msgstr "使用 Conan 构建"
 
-#: ../../source/index.rst:60
-msgid "Metadata"
-msgstr "元数据"
+#: ../../home/min/project/food3d_im/docs/sphinx/source/index.rst:30
+msgid "CMake targets"
+msgstr "CMake 目标"
 
-#: ../../source/index.rst:60
-msgid "User concern contents"
-msgstr "用户关注内容"
+#: ../../home/min/project/food3d_im/docs/sphinx/source/index.rst:30
+msgid "Project metadata"
+msgstr "项目元数据"
 
-#: ../../source/index.rst:2 f8829d5927324198a33e80bf4b0e5d92
-msgid "_`food_volume_measure Documentation`"
-msgstr "food_volume_measure 文档"
+#: ../../home/min/project/food3d_im/docs/sphinx/source/index.rst:2
+#: c6f085487c364344b5b8f818e80b15f5
+msgid "food3d_im"
+msgstr "food3d_im 使用文档"
 
-#: ../../source/index.rst:5 2f445424bcb04d888b75c627290c312e
-msgid "_`Introduction`"
-msgstr "简介"
-
-#: ../../source/index.rst:7 ef1339ae80b441f8ad83b1423614393a
+#: ../../home/min/project/food3d_im/docs/sphinx/source/index.rst:4
+#: 1c1a844630e74e8eb94cc3dd4f17f2d6
 msgid ""
-"food_volume_measure is a C++17 library for point-cloud food volume "
-"measurement on oven trays. It implements the PCD-IM (baseline-plane "
-"height-difference integral) method with PCL: an empty-oven baseline is "
-"discretized into a local-plane height map, the food cloud is voxel-"
-"downsampled and clustered in the baseline plane, and per-cell height "
-"differences are integrated into a volume in cubic centimeters."
+"``food3d_im`` estimates the volume of food above an oven tray from"
+" two kinds of point cloud: one or more empty-tray frames and a frame "
+"containing food. The camera and tray must stay in the same coordinate frame "
+"between captures. The result is a height integral in cubic centimetres, "
+"accompanied by coverage and hole-filling diagnostics."
 msgstr ""
-"food_volume_measure 是一个用于烤盘食材体积测量的 C++17 点云库。它基于 PCL 实现了 "
-"PCD-IM（基准面高度差积分）方法：先将空炉基线离散为局部平面上的高度图，再对食物点云 "
-"进行体素降采样并在基准面内聚类，最后将逐格高度差积分得到以立方厘米为单位的体积。"
+"``food3d_im`` "
+"根据空烤盘点云和食材点云估算食材高出烤盘的体积。空盘可拍摄一帧或多帧；两次采集之间，相机与烤盘必须保持在同一坐标系。结果以立方厘米表示，并附带覆盖情况和补洞数量，方便判断哪些部分来自观测。"
 
-#: ../../source/index.rst:14 7aa0e7b69da14a8b8d48abcacfd3ab45
-msgid "_`Main Features`"
-msgstr "主要特性"
-
-#: ../../source/index.rst:16 c84a4990ec5e40f7ac465faa408f16e4
-msgid "Empty-oven baseline model with RANSAC plane fitting"
-msgstr "基于 RANSAC 平面拟合的空炉基线模型"
-
-#: ../../source/index.rst:17 7a43d5db11544867acfa333b6c95596b
-msgid "Open3D-equivalent voxel downsampling and DBSCAN clustering"
-msgstr "与 Open3D 等价的体素降采样与 DBSCAN 聚类"
-
-#: ../../source/index.rst:18 808f5b27b7534e8ba129eba22ddb3953
-msgid "Component-aware conservative hole completion"
-msgstr "组件感知的保守补洞"
-
-#: ../../source/index.rst:19 fd85e4508ad64fbcb49dc1d5cd3b2441
-msgid "Reference volumes (AABB / OBB / convex hull)"
-msgstr "参考体积（AABB / OBB / 凸包）"
-
-#: ../../source/index.rst:20 13ef126de94d49fdbce764b43e09557e
-msgid "PCD loading via ``vm::load_pcd``"
-msgstr "通过 ``vm::load_pcd`` 载入 PCD"
-
-#: ../../source/index.rst:21 a431e9aa56b44501ba3f37e9dde03e52
+#: ../../home/min/project/food3d_im/docs/sphinx/source/index.rst:9
+#: b7ba9020f0594a8bb9153c6f5f6027df
 msgid ""
-"Host-only point-cloud processing (PCL); bare-metal stubs report an "
-"unsupported status"
-msgstr "仅宿主机点云处理（PCL）；裸机桩返回不支持状态"
+"Start with :doc:`measurement <export>` for a complete C++ example. Read "
+":doc:`building <components/conan>` if you need to build the package. Doxygen"
+" provides the API reference for ``FoodVolumeMeasurer``, "
+"``MeasurementConfig``, and ``VolumeEstimate``. After a local documentation "
+"build, open ``docs/doxygen/build/docs.html`` to choose a language."
+msgstr ""
+"先读 :doc:`测量一帧点云 <export>`，其中有完整的 C++ 示例。需要编译包时看 :doc:`使用 Conan 构建 "
+"<components/conan>`。``FoodVolumeMeasurer``、``MeasurementConfig`` 和 "
+"``VolumeEstimate`` 的接口说明由 Doxygen 生成。本地构建文档后，打开 "
+"``docs/doxygen/build/docs.html`` 可选择语言。"
 
-#: ../../source/index.rst:24 4170aa92ad3d4d84be424e1c5fb85b91
-msgid "_`Quick Start`"
-msgstr "快速开始"
+#: ../../home/min/project/food3d_im/docs/sphinx/source/index.rst:15
+#: f91cc30356754b0d81c6a267159368a6
+msgid "What the estimate means"
+msgstr "体积结果的含义"
 
-#: ../../source/index.rst:41 f85fc1b4784d4b3c8541738e6f9ecd89
-msgid "_`Project Structure`"
-msgstr "项目结构"
-
-#: ../../source/index.rst:56 8d144ba9dfdc4a048be153ff19ea50b8
-msgid "_`Detailed Settings`"
-msgstr "详细设置"
-
-#: ../../source/index.rst:58 b2ddc9891e27429da16460a22d4bbea8
+#: ../../home/min/project/food3d_im/docs/sphinx/source/index.rst:17
+#: 46a937fadede4d3ea5941cd652b0d1fa
 msgid ""
-"For detailed settings in project-level meta, conan recipe, or cmake file,"
-" see:"
-msgstr "有关项目级元数据、Conan 配方或 CMake 文件中的详细设置，请参阅："
+"The library fits a plane to the empty tray, stores the observed tray height "
+"in each grid cell, and compares food points with that measured surface. It "
+"never substitutes an ideal flat tray for cells where the empty capture has "
+"no data. Small enclosed gaps in the food surface may be filled; their volume"
+" is reported separately from the volume supported by measured points."
+msgstr "库从空烤盘点云拟合平面，并在每个栅格保存实测烤盘高度，再与食材点比较。空盘没有数据的栅格不会用理想平面补齐。食材表面内部的小孔洞可能被补全；这部分体积与实测点支撑的体积分开报告。"
 
-#: ../../source/index.rst:69 747e4e61ad734fec8443f066d65473c5
-msgid "_`License`"
-msgstr "许可证"
-
-#: ../../source/index.rst:71 c69d4da3330a4da08da258730deaebb8
+#: ../../home/min/project/food3d_im/docs/sphinx/source/index.rst:22
+#: e37a49bdbea74ffeaa7be9907e345e14
 msgid ""
-"This project is licensed under the Apache-2.0 License. See the LICENSE "
-"file for details."
-msgstr "本项目采用 Apache-2.0 许可证授权。详情请参阅 LICENSE 文件。"
+"Check ``VolumeEstimate.status`` before using any numeric result. On success,"
+" ``volume_cm3`` is the sum of ``raw_volume_cm3`` and "
+"``interpolated_volume_cm3``. A large ``interpolated_cells`` count or a low "
+"``coverage_ratio`` is a reason to inspect the input clouds and the "
+"intermediate PCD files, not a reason to treat the estimate as ground truth."
+msgstr ""
+"使用数值结果前，先检查 ``VolumeEstimate.status``。测量成功时，``volume_cm3`` 等于 "
+"``raw_volume_cm3`` 与 ``interpolated_volume_cm3`` 之和。如果 "
+"``interpolated_cells`` 很多，或 ``coverage_ratio`` 很低，应检查输入点云和中间 "
+"PCD；不要直接把估算值当作实测真值。"
 
-#~ msgid "Export"
-#~ msgstr "导出"
+#: ../../home/min/project/food3d_im/docs/sphinx/source/index.rst:28
+#: 405e6c11461a4486b41d26aa9fa96693
+msgid "Where to go next"
+msgstr "继续阅读"
 
-#~ msgid "_`The export`"
-#~ msgstr "导出说明"
-
-#~ msgid "Full demonstration of a specific library work."
-#~ msgstr "特定库工作的完整演示。"
-
-#~ msgid ""
-#~ "fcpp is a modern C/C++ library "
-#~ "development framework that integrates advanced"
-#~ " build systems, dependency management, and"
-#~ " modular development support."
-#~ msgstr "fcpp 是一个现代化的 C/C++ 库开发框架，集成了先进的构建系统、依赖管理以及模块化开发支持。"
-
-#~ msgid "Support for mixed C and C++ programming"
-#~ msgstr "支持 C 与 C++ 混合编程"
-
-#~ msgid "Built-in C++20 module support"
-#~ msgstr "内置 C++20 模块支持"
-
-#~ msgid "Conan-based dependency management"
-#~ msgstr "基于 Conan 的依赖管理"
-
-#~ msgid "Cross-platform build support (Windows/Linux/macOS)"
-#~ msgstr "跨平台构建支持 (Windows/Linux/macOS)"
-
-#~ msgid "Automated code generation and processing"
-#~ msgstr "自动化代码生成与处理"
-
-#~ msgid "Intelligent header and module conversion"
-#~ msgstr "头文件与模块的智能转换"
+#: ../../home/min/project/food3d_im/docs/sphinx/source/index.rst:38
+#: 83bcc4a2f8fc4b049b13fc5dfd5e9648
+msgid ""
+"The package targets C++17. The PCL measurement pipeline runs on host "
+"platforms; a bare-metal build reports ``kUnsupportedPlatform`` for this "
+"operation."
+msgstr "包默认使用 C++17。基于 PCL 的测量流程在主机平台运行；裸机构建对该操作返回 ``kUnsupportedPlatform``。"
 

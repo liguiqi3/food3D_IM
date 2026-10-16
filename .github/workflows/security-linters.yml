@@ -46,7 +46,7 @@ jobs:
           DEPS=$(python3 - <<'PY'
           import yaml
           reqs = yaml.safe_load(open('conandata.yml'))['requirements']
-          mapping = {'zlib': 'zlib1g-dev', 'pcre2': 'libpcre2-dev', 'eigen': 'libeigen3-dev', 'pcl': 'libpcl-dev'}
+          mapping = {'eigen': 'libeigen3-dev', 'pcl': 'libpcl-dev', 'nlohmann_json': 'nlohmann-json3-dev'}
           pkgs = {mapping[r.split('/')[0]] for r in reqs if r.split('/')[0] in mapping}
           print(' '.join(sorted(pkgs)))
           PY
@@ -55,15 +55,6 @@ jobs:
           # apt clang-format (v18 on noble) does NOT support the `Language: C`
           # config section (needs LLVM >= 19) — pin the pip build instead.
           python3 -m pip install --only-binary :all: clang-format==23.1.0
-
-      # ETL is header-only and has no Ubuntu package; download the release
-      # archive at the version declared in conandata.yml (no hardcoded version).
-      - name: Install ETL headers (version from conandata.yml)
-        run: |
-          ETL_VER=$(python3 -c "import yaml; d=yaml.safe_load(open('conandata.yml')); print([r for r in d['requirements'] if r.startswith('etl/')][0].split('/')[1])")
-          curl --proto '=https' --proto-redir '=https' -sSL -o /tmp/etl.zip "https://github.com/ETLCPP/etl/archive/refs/tags/${ETL_VER}.zip"
-          unzip -q /tmp/etl.zip -d /tmp/etl-src
-          echo "ETL_INC=/tmp/etl-src/etl-${ETL_VER}/include" >> "$GITHUB_ENV"
 
       # Required gate: formatting must be clean.
       # Private convention routes by language family: .c/.h -> C, .cpp/.hpp -> C++
@@ -91,10 +82,10 @@ jobs:
         run: |
           shopt -s nullglob
           for f in src/*.c; do
-            clang-tidy --config-file=.github/misc/.clang-tidy "$f" -- -std=c11 -Iinclude -I/usr/include/eigen3 -isystem "$ETL_INC"
+            clang-tidy --config-file=.github/misc/.clang-tidy "$f" -- -std=c11 -Iinclude -I/usr/include/eigen3
           done
           for f in src/*.cpp; do
-            clang-tidy --config-file=.github/misc/.clang-tidy "$f" -- -std=c++17 -Iinclude -I/usr/include/eigen3 $PCL_INC -isystem "$ETL_INC"
+            clang-tidy --config-file=.github/misc/.clang-tidy "$f" -- -std=c++17 -Iinclude -I/usr/include/eigen3 $PCL_INC
           done
 
       # Required gate: secrets scan with pinned binary version

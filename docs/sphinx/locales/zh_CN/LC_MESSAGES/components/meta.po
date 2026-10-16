@@ -1,14 +1,14 @@
 # SOME DESCRIPTIVE TITLE.
-# Copyright (C) 2025, fcpp-innovation
-# This file is distributed under the same license as the fcpp package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2025.
+# Copyright (C) 2026, HeT-FTI
+# This file is distributed under the same license as the food3d_im
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
 #
-#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: fcpp 1.0\n"
+"Project-Id-Version: food3d_im 1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-09-05 18:05+0800\n"
+"POT-Creation-Date: 2026-09-30 14:19+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: zh_CN\n"
@@ -17,60 +17,131 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.17.0\n"
+"Generated-By: Babel 2.18.0\n"
 
-#: ../../source/components/meta.rst:2 e038fd36b2844c2f837dc9332b04cfc8
-msgid "_`Metadata Configuration`"
-msgstr "元数据配置"
+#: ../../home/min/project/food3d_im/docs/sphinx/source/components/meta.rst:2
+#: 8b2ad64b0bea447b9103cb4357c85f6b
+msgid "Project metadata"
+msgstr "项目元数据"
 
-#: ../../source/components/meta.rst:5 8ffc98a6547145b083c06687b0fd93dd
-msgid "_`Project-level Settings`"
-msgstr "项目级设置"
-
-#: ../../source/components/meta.rst:7 7cc351e81aa641889931f4d341b1294f
+#: ../../home/min/project/food3d_im/docs/sphinx/source/components/meta.rst:4
+#: 0fe69fa2474f49be82028e686d34520b
 msgid ""
-"The metadata.json file contains the metadata configuration for the fcpp "
-"project, including basic project information, build configuration, and "
-"dependency definitions."
+"``metadata.json`` is read by the Conan recipe, the root CMake project, and "
+"the documentation builder. Change a setting there when you intend to change "
+"all of those consumers; edit ``MeasurementConfig`` or a measurement JSON "
+"file to change an algorithm parameter."
 msgstr ""
-"metadata.json 文件包含 fcpp 项目的元数据配置，包括基本项目信息、构建配置和"
-"依赖定义。"
+"Conan 配方、根目录 CMake 工程和文档构建器都会读取 "
+"``metadata.json``。只有在希望这些使用方一起改变时才修改该文件；算法参数应在 ``MeasurementConfig`` 或测量用 "
+"JSON 文件中调整。"
 
-#: ../../source/components/meta.rst:11 2a63b984d8be4c0595f65d0af4bd364a
-msgid "_`File Structure`"
-msgstr "文件结构"
+#: ../../home/min/project/food3d_im/docs/sphinx/source/components/meta.rst:9
+#: f577cbe83bf2464eafb31b8f7cfcfc79
+msgid "Settings that affect this library"
+msgstr "影响本库的设置"
 
-#: ../../source/components/meta.rst:13 c129fc51da494d4f9b97452c658ce102
+#: ../../home/min/project/food3d_im/docs/sphinx/source/components/meta.rst:15
+#: 6684b7ac31004b2a9ed59177899ba789
+msgid "Key"
+msgstr "键"
+
+#: ../../home/min/project/food3d_im/docs/sphinx/source/components/meta.rst:16
+#: 2c94fbe3bb754b449694f72a1309d7f4
+msgid "Effect"
+msgstr "作用"
+
+#: ../../home/min/project/food3d_im/docs/sphinx/source/components/meta.rst:17
+#: 7732850dde7c4e5fac0b156ef89603ce
+msgid "``build_cppstd``"
+msgstr "``build_cppstd``"
+
+#: ../../home/min/project/food3d_im/docs/sphinx/source/components/meta.rst:18
+#: aa140f7f4efe413681718df0d92e8034
+msgid "Sets the C++ standard; the current value is 17. Module support starts at 23."
+msgstr "设置 C++ 标准；当前值为 17。模块支持从 23 开始。"
+
+#: ../../home/min/project/food3d_im/docs/sphinx/source/components/meta.rst:19
+#: 7934c5384cb74b6f8e141a93a0e806a9
+msgid "``is_shared``"
+msgstr "``is_shared``"
+
+#: ../../home/min/project/food3d_im/docs/sphinx/source/components/meta.rst:20
+#: f1e73a67963d47958c6b745518bc245f
+msgid "Chooses static or shared library output, subject to the Windows fallback."
+msgstr "选择静态库或共享库，但 Windows 有退回静态库的限制。"
+
+#: ../../home/min/project/food3d_im/docs/sphinx/source/components/meta.rst:21
+#: 0f838022c28147edb866f50cb7536541
+msgid "``enable_python_bindings``"
+msgstr "``enable_python_bindings``"
+
+#: ../../home/min/project/food3d_im/docs/sphinx/source/components/meta.rst:22
+#: 0cc84759ac4849bbbb75ec7c7758987b
+msgid "Builds the host pybind11 module when true."
+msgstr "为 true 时构建主机端 pybind11 模块。"
+
+#: ../../home/min/project/food3d_im/docs/sphinx/source/components/meta.rst:23
+#: 99d1c6af72ec4473bc22283b9349c987
+msgid "``dependencies.cpp``"
+msgstr "``dependencies.cpp``"
+
+#: ../../home/min/project/food3d_im/docs/sphinx/source/components/meta.rst:24
+#: b538402991314600b552ccf4f70c1578
 msgid ""
-"The JSON file includes sections for basic project information (name, "
-"version, license, description), authors and maintainers, build "
-"configuration (CMake version, C/C++ standards), module settings, "
-"dependency definitions, and documentation configuration."
-msgstr ""
-"该 JSON 文件包含基本项目信息（名称、版本、许可证、描述）、作者和维护者、"
-"构建配置（CMake 版本、C/C++ 标准）、模块设置、依赖定义以及文档配置等部分。"
+"Names CMake targets linked to the C++ library. Package versions are in "
+"``conandata.yml``."
+msgstr "列出链接到 C++ 库的 CMake 目标。包版本写在 ``conandata.yml``。"
 
-#: ../../source/components/meta.rst:18 1642bd1c563b4f07864db733210c174f
-msgid "_`Key Settings`"
-msgstr "关键设置"
+#: ../../home/min/project/food3d_im/docs/sphinx/source/components/meta.rst:26
+#: d2d2dd4cd45845e68fbb22e764d1eb53
+msgid "``doc_languages`` / ``doc_versions``"
+msgstr "``doc_languages`` / ``doc_versions``"
 
-#: ../../source/components/meta.rst:20 8f6171353602444d8058ca571a7c82c6
+#: ../../home/min/project/food3d_im/docs/sphinx/source/components/meta.rst:27
+#: ed4bc0f41c70493a9e860b9dca6d43f1
 msgid ""
-"Basic project information defines the package identity. Build "
-"configuration specifies tool versions and language standards. Module "
-"settings control standard and user module usage. Dependencies are "
-"categorized into common, C-specific, and C++-specific requirements. "
-"Documentation settings configure Doxygen generation."
-msgstr ""
-"基本项目信息定义了包的身份标识。构建配置指定了工具版本和语言标准。模块"
-"设置控制标准和用户模块的使用。依赖项被归类为通用、C 专用和 C++ 专用需求。"
-"文档设置用于配置 Doxygen 生成。"
+"Select the Doxygen/Sphinx build variants. These are documentation labels, "
+"not the package's semantic version."
+msgstr "选择 Doxygen/Sphinx 的语言和文档版本；这些标签不是包的语义版本号。"
 
-#: ../../source/components/meta.rst:24 a1dc0c323d4643299ad758742d74cdc4
+#: ../../home/min/project/food3d_im/docs/sphinx/source/components/meta.rst:29
+#: 919366266767465ea08469e96a0c3f83
+msgid "``workflow_triggers.docs``"
+msgstr "``workflow_triggers.docs``"
+
+#: ../../home/min/project/food3d_im/docs/sphinx/source/components/meta.rst:30
+#: d7ec36681230465f81d2ac74c949e2ad
 msgid ""
-"Example configuration demonstrates how to set up a project with C++20 "
-"support, module generation, and common dependencies like Boost and "
-"OpenCV."
+"Enables the documentation CI trigger. A local ``docs/build.py`` run does not"
+" depend on this switch."
+msgstr "启用文档 CI 触发器。本地运行 ``docs/build.py`` 不依赖此开关。"
+
+#: ../../home/min/project/food3d_im/docs/sphinx/source/components/meta.rst:33
+#: ba8eb6486f1b4a8f97f0602499fbe906
+msgid ""
+"The dependency map is a build target map, not a list of versions. For "
+"example, the ``PCL`` entry names ``PCL::PCL`` while ``conandata.yml`` "
+"selects ``pcl/1.14.1``. Keep the two in sync when changing dependencies."
 msgstr ""
-"示例配置展示了如何设置一个支持 C++20、模块生成以及包含 Boost 和 OpenCV "
-"等通用依赖的项目。"
+"依赖映射列出的是构建目标，而不是版本。例如 ``PCL`` 项指定 ``PCL::PCL``，``conandata.yml`` 则选择 "
+"``pcl/1.14.1``。更换依赖时需同时检查两处。"
+
+#: ../../home/min/project/food3d_im/docs/sphinx/source/components/meta.rst:38
+#: 55d620f646b14c109262e60ce2cbb19e
+msgid "Documentation sources"
+msgstr "文档源文件"
+
+#: ../../home/min/project/food3d_im/docs/sphinx/source/components/meta.rst:40
+#: 2bfd237419254dd0a6ee09318bc5cd99
+msgid ""
+"Doxygen reads the paths and suffixes selected by ``doc_doxygen_folders`` and"
+" ``doc_doxygen_suffix``. Sphinx reads pages from ``docs/sphinx/source`` and "
+"Chinese translations from ``docs/sphinx/locales/zh_CN``. Run ``python "
+"docs/build.py`` from the repository root to generate both; the script writes"
+" its output under ``docs/doxygen/build`` and ``docs/sphinx/build``."
+msgstr ""
+"Doxygen 扫描 ``doc_doxygen_folders`` 和 ``doc_doxygen_suffix`` 指定的路径与后缀。Sphinx "
+"从 ``docs/sphinx/source`` 读取页面，从 ``docs/sphinx/locales/zh_CN`` "
+"读取中文翻译。在仓库根目录运行 ``python docs/build.py`` 可生成两套文档；输出分别位于 "
+"``docs/doxygen/build`` 和 ``docs/sphinx/build``。"

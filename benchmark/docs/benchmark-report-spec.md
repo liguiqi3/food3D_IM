@@ -51,9 +51,9 @@ benchmark-report.md
 | generated_at | 报告生成时间 | 2026-06-16 20:30:00 +0800 CST |
 | run_id | GitHub Actions run id | 27321189218 |
 | repo | 仓库 | HeT-FTI/fcpp |
-| package_ref | Conan 包引用 | food_volume_measure/0.1.0 |
+| package_ref | Conan 包引用 | food3d_im/0.1.0 |
 | build_kind | 构建类型 | linux |
-| target_key | 目标 key | linux-armv7 |
+| target_key | 目标 key | linux-orangepi-h6-A53 |
 | toolchain_version | 工具链版本 | 11.3.rel1 |
 | source_branch | 源码分支 | fcpp-dev |
 | report_path | 报告绝对路径 | /home/lgq/.../benchmark-report.md |

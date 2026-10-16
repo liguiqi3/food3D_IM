@@ -17,14 +17,14 @@
 #include <stdint.h>
 #include <cmath>
 #include "core/het_bench_core.h"
-#include "volume_pipeline.hpp"
+#include "pointcloudprocess.hpp"
 
 
 /* ============================================================
  * USER ZONE (algorithm engineer edits only this block)
  * ============================================================ */
 
-constexpr const char *MODULE_NAME = "food_volume_measure";
+constexpr const char *MODULE_NAME = "food3d_im";
 constexpr double kReferenceWidthM = 0.095;
 constexpr double kReferenceDepthM = 0.095;
 constexpr double kReferenceHeightM = 0.020;
@@ -34,9 +34,9 @@ constexpr double kReferenceVolumeM3 =
 
 namespace {
 
-vm::PointCloud &reference_food_cloud()
+PointCloud &reference_food_cloud()
 {
-    static vm::PointCloud cloud;
+    static PointCloud cloud;
     return cloud;
 }
 
@@ -44,7 +44,7 @@ vm::PointCloud &reference_food_cloud()
 
 static void bench_prepare_input(void)
 {
-    vm::PointCloud &cloud = reference_food_cloud();
+    PointCloud &cloud = reference_food_cloud();
     cloud.points.clear();
     cloud.points.reserve(800U);
 
@@ -66,7 +66,7 @@ static void bench_prepare_input(void)
 static int bench_aabb_volume_case(const void * const ctx)
 {
     (void)ctx;
-    const double volume = vm::compute_aabb_volume(reference_food_cloud());
+    const double volume = compute_aabb_volume(reference_food_cloud());
     return std::isfinite(volume) &&
            std::fabs(volume - kReferenceVolumeM3) <= 1.0e-8;
 }
@@ -74,7 +74,7 @@ static int bench_aabb_volume_case(const void * const ctx)
 static int bench_convex_hull_volume_case(const void * const ctx)
 {
     (void)ctx;
-    const double volume = vm::compute_convex_hull_volume(reference_food_cloud());
+    const double volume = compute_convex_hull_volume(reference_food_cloud());
     return std::isfinite(volume) &&
            std::fabs(volume - kReferenceVolumeM3) <= 1.0e-6;
 }

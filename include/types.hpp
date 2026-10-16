@@ -1,20 +1,19 @@
 // Conan::ImportStart
 #pragma once
+#include <cmath>
 #include <cstddef>
+#include <cstdint>
 #include <limits>
+#include <optional>
 #include <string>
 #include <vector>
 // Conan::ImportEnd
 
 
 
-namespace vm {
-
-
-
 /**
- * @brief [en] Default parameter values shared by the PCD-IM volume pipeline.
- * @brief [zh] PCD-IM 体积流水线共享的默认参数值。
+ * @brief [en] Default parameter values shared by the IM volume pipeline.
+ * @brief [zh] IM 体积流水线共享的默认参数值。
  */
 namespace volume_defaults {
 
@@ -40,6 +39,15 @@ constexpr int kCurveFillMinRimSamples = 16;
 constexpr double kCurveFillMinRimCoverage = 0.75;
 constexpr double kCurveFillMaxFitRmseM = 0.004;
 constexpr double kCurveFillMaxPredictionRiseM = 0.015;
+// Height watershed: two nearly touching items share one footprint cluster and are split
+// only where the top surface drops by at least this depth (metres) between their peaks.
+constexpr double kComponentSplitMinValleyDepthM = 0.004;
+// ...and by at least this fraction of the lower peak's height, so a merely bumpy surface
+// (sensor and voxel noise) is never split into pieces.
+constexpr double kComponentSplitMinValleyFrac = 0.35;
+// Watershed markers are the cells at or above this fraction of a component's peak height, so
+// only genuine high plateaus seed a basin and surface noise cannot fragment a single item.
+constexpr double kComponentSplitSeedFrac = 0.55;
 
 } // namespace volume_defaults
 
@@ -50,7 +58,7 @@ constexpr double kCurveFillMaxPredictionRiseM = 0.015;
  * @brief [zh] 输入点云的线性单位。
  * @exporter
  */
-enum class LengthUnit {
+enum class LengthUnit : std::uint8_t {
     kMeter = 0,
     kMillimeter = 1,
 };
@@ -117,7 +125,7 @@ struct AxisAlignedRoi {
  * @brief [zh] 体积测量的结果状态。
  * @exporter
  */
-enum class MeasurementStatus {
+enum class MeasurementStatus : std::uint8_t {
     kSuccess = 0,
     kEmptyInput = 1,
     kNonFiniteInput = 2,
@@ -125,7 +133,6 @@ enum class MeasurementStatus {
     kEmptyBaseline = 4,
     kNonFiniteBaseline = 5,
     kPlaneNotFound = 6,
-    kPlaneLowQuality = 7,
     kBaselineNoCells = 8,
     kFoodNotFound = 9,
     kInsufficientCoverage = 10,
@@ -135,46 +142,47 @@ enum class MeasurementStatus {
 
 
 /**
- * @brief [en] How foreground food components are selected.
- * @brief [zh] 前景食材组件的选择方式。
- * @exporter
- */
-enum class ComponentSelectionMode {
-    kAllEligible = 0,
-    kManual = 1,
-};
-
-
-
-/**
- * @brief [en] Configuration for the PCD-IM volume pipeline.
- * @brief [zh] PCD-IM 体积流水线的配置。
+ * @brief [en] Configuration for the IM volume pipeline.
+ * @brief [zh] IM 体积流水线的配置。
+ * @details [en] Input points use `input_unit`; ROI bounds and every distance field use
+ *     metres. An absent `roi` disables cropping, an empty `selected_labels` selects all
+ *     eligible components, and an empty `middle_cloud_dir` disables PCD dumps. Start with
+ *     defaults and change only values supported by the capture geometry. A `voxel_size_m` of 0
+ *     keeps every point (no downsampling).
+ *     `enable_height_watershed` (default false) splits an over-merged footprint cluster at a
+ *     height valley; enable it to separate nearly touching items.
+ * @details [zh] 输入点坐标使用 `input_unit`；ROI 边界与距离字段始终以米计。
+ *     `roi` 为空时不裁剪，`selected_labels` 为空时选择全部合格连通块，
+ *     `middle_cloud_dir` 为空时不保存中间 PCD。建议从默认值开始，只调整与采集条件有关的值。
+ *     `voxel_size_m` 取 0 表示不做降采样、保留全部点。
+ *     `enable_height_watershed`（默认 false）在高度凹谷处细分被过度合并的足迹簇；
+ *     启用后可区分相邻食材。
  * @exporter
  */
 struct MeasurementConfig {
     LengthUnit input_unit = LengthUnit::kMeter;
 
-    bool use_roi = false;
-    AxisAlignedRoi roi;
+    std::optional<AxisAlignedRoi> roi;
 
+    // Voxel edge length for downsampling, in metres. A value of 0 disables downsampling.
     double voxel_size_m = volume_defaults::kVoxelSizeM;
 
     // Baseline plane fitting.
     double plane_distance_threshold_m = volume_defaults::kPlaneDistanceM;
-    int plane_ransac_iterations = volume_defaults::kPlaneRansacIterations;
-    double baseline_max_surface_height_m = volume_defaults::kBaselineMaxSurfaceHeightM;
 
     // Optional second dominant background plane removal.
     bool remove_secondary_plane = false;
-    double secondary_plane_distance_threshold_m = volume_defaults::kPlaneDistanceM;
 
-    // Food-frame background clustering (3D) and footprint clustering (2D).
-    double cluster_eps_m = volume_defaults::kClusterEpsM;
+    // Foreground footprint clustering (2D).
     double foreground_cluster_eps_m = volume_defaults::kForegroundClusterEpsM;
     int cluster_min_points = volume_defaults::kClusterMinPoints;
 
+    // Split an over-merged footprint cluster where the top surface dips into a height valley
+    // between two peaks. Disabled by default; enable it to separate nearly touching items.
+    bool enable_height_watershed = false;
+
     // Foreground component selection.
-    ComponentSelectionMode selection_mode = ComponentSelectionMode::kAllEligible;
+    // Empty selects all eligible components.
     std::vector<int> selected_labels;
 
     // Integration.
@@ -183,30 +191,22 @@ struct MeasurementConfig {
     double min_height_m = volume_defaults::kMinHeightM;
     double max_height_m = -1.0; // negative disables the cap
 
-    // Baseline lookup.
-    int baseline_fill_radius_cells = volume_defaults::kBaselineFillRadiusCells;
-
     // Small-hole interpolation.
     int hole_fill_max_cells = volume_defaults::kHoleFillMaxCells;
-    int hole_fill_neighbor_radius_cells = volume_defaults::kHoleFillNeighborRadiusCells;
-    double hole_fill_max_neighbor_height_delta_m = volume_defaults::kHoleFillMaxNeighborDeltaM;
 
     // Quadratic-surface hole completion.
     double curve_fill_max_hole_area_cm2 = volume_defaults::kCurveFillMaxHoleAreaCm2;
-    double curve_fill_max_component_area_ratio = volume_defaults::kCurveFillMaxComponentAreaRatio;
-    double curve_fill_max_imputed_ratio = volume_defaults::kCurveFillMaxImputedRatio;
-    int curve_fill_rim_radius_cells = volume_defaults::kCurveFillRimRadiusCells;
-    int curve_fill_min_rim_samples = volume_defaults::kCurveFillMinRimSamples;
-    double curve_fill_min_rim_coverage = volume_defaults::kCurveFillMinRimCoverage;
-    double curve_fill_max_fit_rmse_m = volume_defaults::kCurveFillMaxFitRmseM;
-    double curve_fill_max_prediction_rise_m = volume_defaults::kCurveFillMaxPredictionRiseM;
+
+    // Optional per-stage point-cloud dump for debugging and visualisation.
+    // Empty disables the dump.
+    std::string middle_cloud_dir;
 };
 
 
 
 /**
- * @brief [en] Per-component PCD-IM integration result.
- * @brief [zh] 单组件 PCD-IM 积分结果。
+ * @brief [en] Per-component IM integration result.
+ * @brief [zh] 单个连通块 IM 积分结果。
  * @exporter
  */
 struct ComponentVolumeEstimate {
@@ -231,8 +231,18 @@ struct ComponentVolumeEstimate {
 
 
 /**
- * @brief [en] Result of a PCD-IM volume measurement. Numeric fields are NaN unless status is kSuccess.
- * @brief [zh] PCD-IM 体积测量结果。除非状态为 kSuccess，否则数值字段为 NaN。
+ * @brief [en] Volume estimate and diagnostics from one food frame.
+ * @brief [zh] 单帧食材的体积估计与诊断信息。
+ * @details [en] Check `status` before reading numeric results; volume and geometry values
+ *     are NaN on failure. On success, `volume_cm3` equals `raw_volume_cm3` plus
+ *     `interpolated_volume_cm3`. `component_estimates` follows the order of
+ *     `selected_cluster_labels`. AABB, OBB, and convex-hull volumes use cubic metres and
+ *     are geometric references, not tray-relative integrals. Cell counts remain useful
+ *     diagnostics even when an estimate is incomplete.
+ * @details [zh] 先检查 `status`；失败时体积及几何数值为 NaN。成功时
+ *     `volume_cm3` 等于 `raw_volume_cm3` 与 `interpolated_volume_cm3` 之和。
+ *     `component_estimates` 与 `selected_cluster_labels` 顺序一致。AABB、OBB 和凸包体积
+ *     使用立方米，是几何参考值，并非相对烤盘的高度积分。栅格计数可用于排查测量质量。
  * @exporter
  */
 struct VolumeEstimate {
@@ -240,7 +250,6 @@ struct VolumeEstimate {
     double volume_cm3 = std::numeric_limits<double>::quiet_NaN();
     double raw_volume_cm3 = std::numeric_limits<double>::quiet_NaN();
     double interpolated_volume_cm3 = std::numeric_limits<double>::quiet_NaN();
-    double uncertainty_cm3 = std::numeric_limits<double>::quiet_NaN();
 
     std::size_t input_points = 0;
     std::size_t downsampled_points = 0;
@@ -249,7 +258,7 @@ struct VolumeEstimate {
     std::size_t selected_cluster_points = 0;
 
     /// [en] Per-component integration results, aligned with `selected_cluster_labels`.
-    /// [zh] 逐组件积分结果，与 `selected_cluster_labels` 一一对应。
+    /// [zh] 逐连通块积分结果，与 `selected_cluster_labels` 一一对应。
     std::vector<ComponentVolumeEstimate> component_estimates;
 
     std::size_t baseline_frames = 0;
@@ -313,8 +322,4 @@ const char* status_to_string(MeasurementStatus status);
  * @return [zh] 所有坐标都有限时为真。
  * @exporter
  */
-bool is_finite(const Point3f& p);
-
-
-
-} // namespace vm
+inline bool is_finite(const Point3f& p) { return std::isfinite(p.x) && std::isfinite(p.y) && std::isfinite(p.z); }

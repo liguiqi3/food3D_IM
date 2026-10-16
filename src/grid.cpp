@@ -5,12 +5,8 @@
 #include <cstdint>
 #include <utility>
 #include <vector>
-#include "volume_internal.hpp"
+#include "grid.hpp"
 // Conan::ImportEnd
-
-
-
-namespace vm {
 
 
 
@@ -76,7 +72,3 @@ bool lookup_baseline_height(const BaselineData& baseline, CellKey key, int fill_
     }
     return false;
 }
-
-
-
-} // namespace vm

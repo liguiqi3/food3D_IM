@@ -1,5 +1,5 @@
 {
-  "name": "food_volume_measure",
+  "name": "food3d_im",
   "target": "auto",
   "version": "0.1.0",
   "team": "HeT-FTI",
@@ -8,33 +8,33 @@
   "authors": ["Chen Zhang <chen2.zhang@szhittech.com>"],
   "maintainers": ["Chen Zhang <chen2.zhang@szhittech.com>"],
   "topics": ["build", "library", "point-cloud", "volume-measurement", "pcl"],
-  "url": "https://github.com/HeT-FTI/food_volume_measure.git",
-  "homepage": "https://github.com/HeT-FTI/food_volume_measure",
+  "url": "https://github.com/HeT-FTI/food3d_im.git",
+  "homepage": "https://github.com/HeT-FTI/food3d_im",
   "cmake_version": "4.0.1",
   "build_cppstd": "17",
   "build_cstd": "11",
   "build_type": "Debug",
-  "activate_code_coverage": true,
+  "activate_code_coverage": false,
   "is_shared": false,
   "is_header": false,
   "generate_modules_inplace": false,
   "std_modules": "iostream",
   "user_modules": "",
   "dependencies": {
-    "common": {"ZLIB": ["ZLIB::ZLIB"]},
+    "common": {},
     "c": {},
     "cpp": {
       "Eigen3": ["Eigen3::Eigen"],
-      "etl": ["etl::etl"],
-      "PCL": ["PCL::PCL"]
+      "PCL": ["PCL::PCL"],
+      "nlohmann_json": ["nlohmann_json::nlohmann_json"]
     },
     "infra": {"GTest": ["gtest::gtest"], "pybind11": ["pybind11::module"]}
   },
-  "baremetal_white_list": ["etl", "ArduinoJson"],
+  "baremetal_white_list": ["ArduinoJson"],
   "graphviz_bin": "/usr/bin",
   "doc_languages": ["en", "zh"],
   "doc_versions": ["1.0", "2.0"],
-  "doc_doxygen_folders": ["include", "src", "docs/doxygen/dox"],
+  "doc_doxygen_folders": ["include", "docs/doxygen/dox"],
   "doc_doxygen_suffix": ["h", "c", "hpp", "cpp", "dox", "cxx"],
   "trigger_tests": true,
   "saving_tests_log": true,
@@ -43,7 +43,7 @@
     "build": true,
     "tests": true,
     "release": false,
-    "docs": false,
+    "docs": true,
     "security_scan": true
   }
 }

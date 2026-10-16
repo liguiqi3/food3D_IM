@@ -3,12 +3,8 @@
 #include <cstddef>
 #include <string>
 #include <vector>
-#include "volume_types.hpp"
+#include "types.hpp"
 // Conan::ImportEnd
-
-
-
-namespace vm {
 
 
 
@@ -26,14 +22,14 @@ struct PreprocessResult {
 
 
 /**
- * @brief [en] Validates, unit-normalizes, crops, voxel-downsamples, and de-noises the input cloud.
- * @brief [zh] 校验、单位归一、裁剪、体素降采样并去噪输入点云。
+ * @brief [en] Validates, unit-normalizes, optionally crops, and voxel-downsamples a cloud.
+ * @brief [zh] 校验、单位换算、可选裁剪并体素降采样点云。
  * @param input [en] Raw input cloud in `cfg.input_unit`.
  * @param input [zh] 以 `cfg.input_unit` 为单位的原始输入点云。
- * @param cfg [en] Measurement configuration.
- * @param cfg [zh] 测量配置。
- * @param out [en] Receives the processed cloud in meters plus point counters.
- * @param out [zh] 接收以米为单位的处理后点云以及点数统计。
+ * @param cfg [en] Configuration; ROI bounds and voxel size are in metres.
+ * @param cfg [zh] 配置；ROI 边界和体素边长均以米为单位。
+ * @param out [en] Processed cloud in meters plus point counters.
+ * @param out [zh] 以米为单位的处理后点云以及点数统计。
  * @return [en] kSuccess, or an input/config error status.
  * @return [zh] kSuccess，或输入/配置错误状态。
  * @exporter
@@ -81,10 +77,10 @@ PointCloud crop_axis_aligned(const PointCloud& cloud, const AxisAlignedRoi& roi)
  * @param plane [zh] 归一化的 Hessian 平面。
  * @param distance_threshold_m [en] Inlier distance threshold.
  * @param distance_threshold_m [zh] 内点距离阈值。
- * @param remaining [en] Receives the points whose distance is at or beyond the threshold.
- * @param remaining [zh] 接收距离不低于阈值的点。
- * @param inlier_indices [en] Receives indices of points whose distance is below the threshold.
- * @param inlier_indices [zh] 接收距离低于阈值的点的索引。
+ * @param remaining [en] Points whose distance is at or beyond the threshold.
+ * @param remaining [zh] 距离不低于阈值的点。
+ * @param inlier_indices [en] Indices of points whose distance is below the threshold.
+ * @param inlier_indices [zh] 距离低于阈值的点的索引。
  * @exporter
  */
 void split_plane_inliers(const PointCloud& cloud, const Plane& plane, double distance_threshold_m,
@@ -108,12 +104,14 @@ Plane orient_plane(const Plane& plane, const PointCloud& points);
 
 
 /**
- * @brief [en] Voxel downsampling matching Open3D `voxel_down_sample`: each occupied voxel keeps the centroid of its points.
- * @brief [zh] 与 Open3D `voxel_down_sample` 一致的体素降采样：每个被占用的体素保留其点的质心。
+ * @brief [en] Voxel downsampling: each occupied voxel keeps the centroid of its points.
+ * @brief [zh] 体素降采样：每个被占用的体素保留其点的质心。
  * @param cloud [en] Input point cloud.
  * @param cloud [zh] 输入点云。
- * @param voxel_size [en] Voxel edge length in the cloud's units.
- * @param voxel_size [zh] 体素边长（点云单位）。
+ * @param voxel_size [en] Voxel edge length in the cloud's units; a value of 0 or less
+ *     returns an empty cloud, so callers should skip the call to keep all points.
+ * @param voxel_size [zh] 体素边长（点云单位）；取 0 或更小时返回空点云，
+ *     调用方应跳过该调用来保留全部点。
  * @return [en] Downsampled point cloud (one centroid per occupied voxel).
  * @return [zh] 降采样后的点云（每个被占用体素一个质心）。
  * @exporter
@@ -140,18 +138,18 @@ std::vector<int> dbscan_labels(const std::vector<Point3f>& points, double eps, i
 
 
 /**
- * @brief [en] Fits a dominant plane from a point cloud with Open3D-equivalent RANSAC.
- * @brief [zh] 用与 Open3D 等价的 RANSAC 从点云拟合主平面。
+ * @brief [en] Fits a dominant plane from a point cloud with RANSAC.
+ * @brief [zh] 用 RANSAC 从点云拟合主平面。
  * @param cloud_m [en] Points in metres.
  * @param cloud_m [zh] 以米为单位的点。
  * @param distance_threshold_m [en] RANSAC inlier distance threshold.
  * @param distance_threshold_m [zh] RANSAC 内点距离阈值。
  * @param iterations [en] RANSAC iteration count.
  * @param iterations [zh] RANSAC 迭代次数。
- * @param out_plane [en] Receives the normalized Hessian plane.
- * @param out_plane [zh] 接收归一化的 Hessian 平面。
- * @param inlier_indices [en] Receives the inlier point indices into `cloud_m`.
- * @param inlier_indices [zh] 接收指向 `cloud_m` 的内点索引。
+ * @param out_plane [en] Normalized Hessian plane.
+ * @param out_plane [zh] 归一化的 Hessian 平面。
+ * @param inlier_indices [en] Inlier point indices into `cloud_m`.
+ * @param inlier_indices [zh] 指向 `cloud_m` 的内点索引。
  * @return [en] kSuccess or kPlaneNotFound.
  * @return [zh] kSuccess 或 kPlaneNotFound。
  * @exporter
@@ -164,14 +162,6 @@ MeasurementStatus fit_plane_ransac(const PointCloud& cloud_m, double distance_th
 /**
  * @brief [en] Removes the dominant background plane(s) from a preprocessed food cloud.
  * @brief [zh] 从预处理食物点云中移除主背景平面（及可选的次级平面）。
- * @param cloud_m [en] Preprocessed points in metres.
- * @param cloud_m [zh] 以米为单位的预处理点。
- * @param cfg [en] Measurement configuration.
- * @param cfg [zh] 测量配置。
- * @param remaining [en] Receives the points that are not background-plane inliers.
- * @param remaining [zh] 接收不属于背景平面内点的剩余点。
- * @return [en] kSuccess or kInvalidConfig.
- * @return [zh] kSuccess 或 kInvalidConfig。
  * @exporter
  */
 MeasurementStatus remove_dominant_plane(const PointCloud& cloud_m, const MeasurementConfig& cfg, PointCloud& remaining);
@@ -179,16 +169,38 @@ MeasurementStatus remove_dominant_plane(const PointCloud& cloud_m, const Measure
 
 
 /**
- * @brief [en] Loads a PCD point-cloud file into the library's PCL-free point model.
- * @brief [zh] 将 PCD 点云文件载入到库的与 PCL 无关的点模型。
- * @param path [en] Path to the PCD file.
- * @param path [zh] PCD 文件路径。
- * @return [en] The loaded points, or an empty cloud when the file cannot be read.
- * @return [zh] 载入的点；文件无法读取时返回空点云。
+ * @brief [en] Computes the axis-aligned bounding-box volume of a point cloud in cubic metres.
+ * @brief [zh] 计算点云的轴对齐包围盒体积（立方米）。
+ * @param cloud [en] Points in metres.
+ * @param cloud [zh] 以米为单位的点。
+ * @return [en] AABB volume, or NaN when the cloud is empty.
+ * @return [zh] AABB 体积；点云为空时为 NaN。
  * @exporter
  */
-PointCloud load_pcd(const std::string& path);
+double compute_aabb_volume(const PointCloud& cloud);
 
 
 
-} // namespace vm
+/**
+ * @brief [en] Computes the moment-based oriented bounding-box volume of a point cloud in cubic metres.
+ * @brief [zh] 计算点云基于矩的定向包围盒体积（立方米）。
+ * @param cloud [en] Points in metres.
+ * @param cloud [zh] 以米为单位的点。
+ * @return [en] OBB volume, or NaN when the cloud is empty.
+ * @return [zh] OBB 体积；点云为空时为 NaN。
+ * @exporter
+ */
+double compute_obb_volume(const PointCloud& cloud);
+
+
+
+/**
+ * @brief [en] Computes the convex-hull volume of a point cloud in cubic metres.
+ * @brief [zh] 计算点云的凸包体积（立方米）。
+ * @param cloud [en] Points in metres.
+ * @param cloud [zh] 以米为单位的点。
+ * @return [en] Convex-hull volume, or NaN when it cannot be computed.
+ * @return [zh] 凸包体积；无法计算时为 NaN。
+ * @exporter
+ */
+double compute_convex_hull_volume(const PointCloud& cloud);

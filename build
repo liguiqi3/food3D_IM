@@ -1,4 +1,8 @@
-conan create . -pr:b=default -pr:h=default -s build_type=Release --build=missing
+conan create . -pr:b=default -pr:h=default -s build_type=Release --build=missing -c tools.build:jobs=4
 python ./docs/build.py
 python ./test_package/conanfile.py
 conan remove "fcpp/*" --confirm
+
+conan install .   -pr:b=default   -pr:h=../profiles/gcc13_release   -of build/desktop   --build=missing -c tools.build:jobs=4
+cmake -S . -B build/desktop   -DCMAKE_TOOLCHAIN_FILE=build/desktop/conan_toolchain.cmake   -DCMAKE_BUILD_TYPE=Release
+cmake --build build/desktop -j

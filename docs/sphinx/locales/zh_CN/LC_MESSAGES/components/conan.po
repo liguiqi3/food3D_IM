@@ -1,14 +1,14 @@
 # SOME DESCRIPTIVE TITLE.
-# Copyright (C) 2025, fcpp-innovation
-# This file is distributed under the same license as the fcpp package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2025.
+# Copyright (C) 2026, HeT-FTI
+# This file is distributed under the same license as the food3d_im
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
 #
-#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: fcpp 1.0\n"
+"Project-Id-Version: food3d_im 1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-09-05 18:05+0800\n"
+"POT-Creation-Date: 2026-09-30 14:33+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: zh_CN\n"
@@ -17,71 +17,89 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.17.0\n"
+"Generated-By: Babel 2.18.0\n"
 
-#: ../../source/components/conan.rst:2 95bd56b170d949f8a9d2adfc821c987d
-msgid "_`Conanfile Configuration`"
-msgstr "Conanfile 配置"
+#: ../../home/min/project/food3d_im/docs/sphinx/source/components/conan.rst:2
+#: 5c524c4b87ee431fbec8ddd40a025b87
+msgid "Build with Conan"
+msgstr "使用 Conan 构建"
 
-#: ../../source/components/conan.rst:5 26a1d0188c184399b7f03cf5d70bce42
-msgid "_`Usage`"
-msgstr "用法"
-
-#: ../../source/components/conan.rst:7 b888d08efcc14ed2be84c1f75938b9de
+#: ../../home/min/project/food3d_im/docs/sphinx/source/components/conan.rst:4
+#: 35ad52996ce94e9b9b6cf7594a2b459b
 msgid ""
-"The conanfile.py is the Conan package configuration file for the fcpp "
-"project, responsible for dependency management, package metadata "
-"processing, and module generation."
+"The package recipe in ``conanfile.py`` reads its requirements from "
+"``conandata.yml``. PCL, Eigen, and nlohmann_json are runtime requirements; "
+"pybind11 is included when Python bindings are enabled. GTest is used by the "
+"test package, not by the runtime library."
 msgstr ""
-"conanfile.py 是 fcpp 项目的 Conan 包配置文件，负责依赖管理、包元数据处理"
-"以及模块生成。"
+"``conanfile.py`` 配方从 ``conandata.yml`` 读取依赖。PCL、Eigen 和 nlohmann_json "
+"是运行时依赖；启用 Python 绑定时还会引入 pybind11。GTest 只供测试包使用，不属于运行时库。"
 
-#: ../../source/components/conan.rst:11 2b6c6ecff6994e6992fd385ef858da61
-msgid "_`Main Features`"
-msgstr "主要特性"
+#: ../../home/min/project/food3d_im/docs/sphinx/source/components/conan.rst:9
+#: 4e10cefc0d684bc3af57819251d226aa
+msgid "Build and run the consumer check"
+msgstr "构建并运行使用方检查"
 
-#: ../../source/components/conan.rst:13 d974ce143fb84b988307e39f1ae66d33
-msgid "Project metadata initialization"
-msgstr "项目元数据初始化"
+#: ../../home/min/project/food3d_im/docs/sphinx/source/components/conan.rst:11
+#: 8c148d9d6ac442b489ab7241e11168ab
+msgid "From the repository root:"
+msgstr "在仓库根目录执行："
 
-#: ../../source/components/conan.rst:14 a3c183f926fe421397a7bd3cd5a53b70
-msgid "Dependency management"
-msgstr "依赖管理"
-
-#: ../../source/components/conan.rst:15 f2cb540c50a74e5dbd92517445439c33
-msgid "Module file generation and processing"
-msgstr "模块文件生成与处理"
-
-#: ../../source/components/conan.rst:16 8636afa3abc241bdafaae3606048d723
-msgid "Build configuration generation"
-msgstr "构建配置生成"
-
-#: ../../source/components/conan.rst:17 13c68cce09594bae8152324b33ab48a6
-msgid "Package information definition"
-msgstr "包信息定义"
-
-#: ../../source/components/conan.rst:20 04f30ccd2ec549e1b5bed23badf88062
-msgid "_`Core Functionality`"
-msgstr "核心功能"
-
-#: ../../source/components/conan.rst:22 01e9701ec15f4856b50e2b0a0bab75a2
+#: ../../home/min/project/food3d_im/docs/sphinx/source/components/conan.rst:17
+#: 2c84a6f1f943407c89efa5a335a3454b
 msgid ""
-"The PackageRecipe class handles project initialization by loading "
-"information from metadata.json. It processes module files by generating "
-"them from .hpp and .cpp files, handling export and attach markers. "
-"Dependency management is implemented by loading requirements from "
-"conandata.yml."
+"``conan create`` builds the package and runs the test package's consumer "
+"executable. The full CTest suite runs only when ``trigger_tests`` is enabled"
+" in ``metadata.json``. ``--build=missing`` permits Conan to build a "
+"dependency from source when it cannot find a compatible binary. PCL can take"
+" a long time on the first run for that reason. A package in the cache is "
+"reusable only when its version, options, compiler settings, and dependency "
+"graph match the requested profile."
 msgstr ""
-"PackageRecipe 类通过从 metadata.json 加载信息来处理项目初始化。它通过从"
-".hpp 和 .cpp 文件生成模块文件来处理它们，并处理导出（export）和附加"
-"（attach）标记。依赖管理是通过从 conandata.yml 加载需求来实现的。"
+"``conan create`` 构建库，并运行测试包里的使用方可执行程序。只有 ``metadata.json`` 中的 "
+"``trigger_tests`` 为 true 时，才会运行完整的 CTest 测试集。``--build=missing`` 允许 Conan "
+"在找不到兼容二进制时从源码编译依赖，因此首次执行可能花较长时间编译 PCL。缓存中的包只有在版本、选项、编译器设置和依赖图与当前 profile "
+"匹配时才能复用。"
 
-#: ../../source/components/conan.rst:26 613889e8e4154f0ea2d4ff39d9eafa86
+#: ../../home/min/project/food3d_im/docs/sphinx/source/components/conan.rst:24
+#: bb4f277616804a3181a80ff33c9f9766
 msgid ""
-"The configuration generates CMake toolchain and dependencies files, and "
-"defines package components with their dependencies. Special features "
-"include C header compatibility processing and comment marker handling for"
-" export/attach operations."
+"To avoid a local PCL source build, use a remote with a matching prebuilt PCL"
+" package or add one to the local cache before creating this package. "
+"Removing ``--build=missing`` instead makes Conan fail when the binary is "
+"absent; it does not provide that binary. Check the resolved Conan profile "
+"and the PCL package ID when a build is unexpectedly repeated."
 msgstr ""
-"该配置会生成 CMake 工具链和依赖文件，并定义带有依赖关系的包组件。特殊功能包括"
-"C 头文件兼容性处理以及用于导出/附加操作的注释标记处理。"
+"若想避免本机编译 PCL，需要从远端获取匹配的预编译包，或先把匹配包加入本地缓存。删除 ``--build=missing`` 只会在缺少二进制包时使 "
+"Conan 报错，并不会产生二进制包。若每次都重新编译，应核对实际解析出的 Conan profile 和 PCL package ID。"
+
+#: ../../home/min/project/food3d_im/docs/sphinx/source/components/conan.rst:30
+#: f2588406cc884b76a6d9ccf1c8e237be
+msgid "How the recipe reaches CMake"
+msgstr "配方如何调用 CMake"
+
+#: ../../home/min/project/food3d_im/docs/sphinx/source/components/conan.rst:32
+#: fc12ba03d17045d4b947d9c14389aa59
+msgid ""
+"The recipe creates a CMake toolchain and dependency files, then passes the C"
+" and C++ target lists to ``CMakeLists.txt``. The C++ library links PCL, "
+"Eigen, and nlohmann_json. The public headers and exported CMake targets are "
+"installed with the package. Python bindings are built on the host when "
+"``enable_python_bindings`` is true in ``metadata.json``; cross builds skip "
+"the host Python module."
+msgstr ""
+"配方生成 CMake toolchain 和依赖文件，并将 C/C++ 目标列表传给 ``CMakeLists.txt``。C++ 库链接 "
+"PCL、Eigen 和 nlohmann_json。公开头文件及导出的 CMake 目标随包安装。``metadata.json`` 中的 "
+"``enable_python_bindings`` 为 true 时，主机构建会生成 Python 绑定；交叉构建跳过主机 Python 模块。"
+
+#: ../../home/min/project/food3d_im/docs/sphinx/source/components/conan.rst:38
+#: 88314de83ea440fd8b731686ef16251d
+msgid ""
+"For a bare-metal profile, the recipe filters dependencies through "
+"``baremetal_white_list``. The PCL measurement path is unavailable there and "
+"returns ``kUnsupportedPlatform``. The cross-build archive check verifies "
+"target ISA attributes; it does not make the host measurement algorithm "
+"available on the board."
+msgstr ""
+"裸机 profile 下，配方只保留 ``baremetal_white_list`` 中的依赖。基于 PCL 的测量流程在裸机端不可用，返回 "
+"``kUnsupportedPlatform``。交叉构建的归档检查验证目标 ISA 属性，但不会让主机测量算法在板上运行。"

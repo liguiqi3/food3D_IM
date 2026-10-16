@@ -27,6 +27,12 @@ COPYPASTE_JSCPD_ARGUMENTS:
   - "--pattern"
   - "include/**/*,src/**/*"
 
+# cppcheck: use exhaustive analysis so the default 100-branch limit does not
+# trigger spurious "Limiting analysis of branches" information errors on the
+# PCL-heavy, #ifndef __ARM_EABI__-guarded sources.
+CPP_CPPCHECK_ARGUMENTS:
+  - "--check-level=exhaustive"
+
 REPOSITORY_GITLEAKS_ARGUMENTS:
   - "-c"
   - ".github/misc/.gitleaks.toml"

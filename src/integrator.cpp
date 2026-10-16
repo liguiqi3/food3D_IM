@@ -8,17 +8,13 @@
 #include <set>
 #include <utility>
 #include <vector>
-#include "volume_integrator.hpp"
-#include "volume_internal.hpp"
-#include "volume_log.hpp"
+#include "integrator.hpp"
+#include "grid.hpp"
+#include "log.hpp"
 #ifndef __ARM_EABI__
 #include <Eigen/Dense>
 #endif
 // Conan::ImportEnd
-
-
-
-namespace vm {
 
 
 
@@ -486,7 +482,7 @@ MeasurementStatus build_height_grid(const std::map<CellKey, double>& surface_by_
                                     const MeasurementConfig& cfg, HeightGrid& out) {
     out = HeightGrid{};
 
-    if (!(baseline.cell_size_m > 0.0) || !(cfg.min_height_m >= 0.0F) || cfg.baseline_fill_radius_cells < 0) {
+    if (!(baseline.cell_size_m > 0.0) || !(cfg.min_height_m >= 0.0F)) {
         return MeasurementStatus::kInvalidConfig;
     }
 
@@ -504,8 +500,12 @@ MeasurementStatus build_height_grid(const std::map<CellKey, double>& surface_by_
         const double food_height = entry.second;
 
         double baseline_height = 0.0;
-        if (!lookup_baseline_height(baseline, key, cfg.baseline_fill_radius_cells, baseline_height)) {
+        if (!lookup_baseline_height(baseline, key, volume_defaults::kBaselineFillRadiusCells, baseline_height)) {
             ++out.missing_baseline_cells;
+            const auto missing_label = label_by_cell.find(key);
+            if (missing_label != label_by_cell.end()) {
+                ++out.missing_baseline_by_label[missing_label->second];
+            }
             continue;
         }
 
@@ -569,14 +569,9 @@ MeasurementStatus complete_component_aware_holes(HeightGrid& grid, const Baselin
                                                  const MeasurementConfig& cfg, HoleFillStats& stats) {
     stats = HoleFillStats{};
 
-    if (cfg.hole_fill_max_cells < 0 || cfg.hole_fill_neighbor_radius_cells < 1 ||
-        !(cfg.hole_fill_max_neighbor_height_delta_m > 0.0F) || cfg.baseline_fill_radius_cells < 0 ||
-        !(cfg.curve_fill_max_hole_area_cm2 >= 0.0F) || !(cfg.curve_fill_max_component_area_ratio > 0.0F) ||
-        cfg.curve_fill_max_component_area_ratio > 1.0F || !(cfg.curve_fill_max_imputed_ratio > 0.0F) ||
-        cfg.curve_fill_max_imputed_ratio > 1.0F || cfg.curve_fill_rim_radius_cells < 1 ||
-        cfg.curve_fill_min_rim_samples < 6 || !(cfg.curve_fill_min_rim_coverage > 0.0F) ||
-        cfg.curve_fill_min_rim_coverage > 1.0F || !(cfg.curve_fill_max_fit_rmse_m > 0.0F) ||
-        !(cfg.curve_fill_max_prediction_rise_m > 0.0F)) {
+    // Only the knobs that are still configurable need checking; the retired ones are
+    // compile-time constants in volume_defaults and are already known to be usable.
+    if (cfg.hole_fill_max_cells < 0 || !(cfg.curve_fill_max_hole_area_cm2 >= 0.0F)) {
         return MeasurementStatus::kInvalidConfig;
     }
 
@@ -616,12 +611,19 @@ MeasurementStatus complete_component_aware_holes(HeightGrid& grid, const Baselin
         const std::size_t component_measured = component_cells.size();
         std::size_t component_added = 0;
 
+        // Records a hole as unfilled and attributes its cells to this component, so the
+        // per-component breakdown can report unfilled cells without a second pipeline pass.
+        const auto mark_unfilled = [&](const std::vector<CellKey>& hole) {
+            unfilled.insert(hole.begin(), hole.end());
+            stats.unfilled_by_label[component_label] += hole.size();
+        };
+
         const auto holes = find_enclosed_holes(component_cells, blocked_cells);
         for (const auto& hole : holes) {
             stats.candidate_hole_count += 1;
 
             if (hole_boundary_component_labels(hole, label_by_cell) != std::set<int>{component_label}) {
-                unfilled.insert(hole.begin(), hole.end());
+                mark_unfilled(hole);
                 continue;
             }
 
@@ -629,9 +631,10 @@ MeasurementStatus complete_component_aware_holes(HeightGrid& grid, const Baselin
             bool completion_kind_small = false;
             if (cfg.hole_fill_max_cells > 0 && hole.size() <= static_cast<std::size_t>(cfg.hole_fill_max_cells)) {
                 completion_kind_small = true;
-                if (interpolate_small_hole(
-                        hole, height_by_cell, label_by_cell, component_label, cfg.hole_fill_neighbor_radius_cells,
-                        cfg.hole_fill_max_neighbor_height_delta_m, baseline, cfg.baseline_fill_radius_cells, local)) {
+                if (interpolate_small_hole(hole, height_by_cell, label_by_cell, component_label,
+                                           volume_defaults::kHoleFillNeighborRadiusCells,
+                                           volume_defaults::kHoleFillMaxNeighborDeltaM, baseline,
+                                           volume_defaults::kBaselineFillRadiusCells, local)) {
                     // Small interpolation succeeded.
                 } else {
                     local.clear();
@@ -645,29 +648,31 @@ MeasurementStatus complete_component_aware_holes(HeightGrid& grid, const Baselin
                 const double component_area_m2 = static_cast<double>(component_cells.size()) * cell_area;
                 if (!(cfg.curve_fill_max_hole_area_cm2 > 0.0) || hole_area_cm2 > cfg.curve_fill_max_hole_area_cm2 ||
                     static_cast<double>(hole.size()) * cell_area >
-                        component_area_m2 * cfg.curve_fill_max_component_area_ratio) {
-                    unfilled.insert(hole.begin(), hole.end());
+                        component_area_m2 * volume_defaults::kCurveFillMaxComponentAreaRatio) {
+                    mark_unfilled(hole);
                     continue;
                 }
                 std::vector<double> predictions;
-                if (!fit_quadratic_hole(hole, height_by_cell, label_by_cell, component_label, grid.cell_size_m,
-                                        cfg.curve_fill_rim_radius_cells, cfg.curve_fill_min_rim_samples,
-                                        cfg.curve_fill_min_rim_coverage, cfg.curve_fill_max_fit_rmse_m,
-                                        cfg.curve_fill_max_prediction_rise_m, cfg.min_height_m, has_max_height,
-                                        cfg.max_height_m, predictions)) {
-                    unfilled.insert(hole.begin(), hole.end());
+                if (!fit_quadratic_hole(
+                        hole, height_by_cell, label_by_cell, component_label, grid.cell_size_m,
+                        volume_defaults::kCurveFillRimRadiusCells, volume_defaults::kCurveFillMinRimSamples,
+                        volume_defaults::kCurveFillMinRimCoverage, volume_defaults::kCurveFillMaxFitRmseM,
+                        volume_defaults::kCurveFillMaxPredictionRiseM, cfg.min_height_m, has_max_height,
+                        cfg.max_height_m, predictions)) {
+                    mark_unfilled(hole);
                     continue;
                 }
                 for (std::size_t idx = 0; idx < hole.size(); ++idx) {
                     double baseline_height = 0.0;
-                    if (!lookup_baseline_height(baseline, hole[idx], cfg.baseline_fill_radius_cells, baseline_height)) {
+                    if (!lookup_baseline_height(baseline, hole[idx], volume_defaults::kBaselineFillRadiusCells,
+                                                baseline_height)) {
                         local.clear();
                         break;
                     }
                     local.push_back(SmallAddition{hole[idx], baseline_height, predictions[idx]});
                 }
                 if (local.empty()) {
-                    unfilled.insert(hole.begin(), hole.end());
+                    mark_unfilled(hole);
                     continue;
                 }
                 stats.curve_filled_hole_count += 1;
@@ -677,8 +682,8 @@ MeasurementStatus complete_component_aware_holes(HeightGrid& grid, const Baselin
             const std::size_t projected_inferred = component_added + local.size();
             const std::size_t projected_total = component_measured + projected_inferred;
             if (projected_total == 0 || static_cast<double>(projected_inferred) / static_cast<double>(projected_total) >
-                                            cfg.curve_fill_max_imputed_ratio) {
-                unfilled.insert(hole.begin(), hole.end());
+                                            volume_defaults::kCurveFillMaxImputedRatio) {
+                mark_unfilled(hole);
                 continue;
             }
 
@@ -717,6 +722,90 @@ MeasurementStatus complete_component_aware_holes(HeightGrid& grid, const Baselin
     return MeasurementStatus::kSuccess;
 }
 
+// Derives one estimate per selected component from a single completed height grid. Every grid cell
+// already carries its component label, so the per-component breakdown costs one pass over the grid
+// instead of a second full rasterisation / hole-completion run per component.
+void split_grid_by_component(const std::vector<int>& labels, const HeightGrid& grid, const SurfaceMap& surface,
+                             const HoleFillStats& stats, std::vector<ComponentVolumeEstimate>& out) {
+    const double cell_area = grid.cell_size_m * grid.cell_size_m;
+
+    for (const int label : labels) {
+        ComponentVolumeEstimate est;
+
+        double raw_m = 0.0;
+        double interpolated_m = 0.0;
+        double sum_h = 0.0;
+        double max_h = 0.0;
+        std::size_t measured = 0;
+        std::size_t interpolated = 0;
+        std::int64_t min_i = 0;
+        std::int64_t max_i = 0;
+        std::int64_t min_j = 0;
+        std::int64_t max_j = 0;
+        bool first = true;
+
+        for (std::size_t idx = 0; idx < grid.cells.size(); ++idx) {
+            if (grid.component_labels[idx] != label) {
+                continue;
+            }
+            const double h = grid.heights_m[idx];
+            sum_h += h;
+            max_h = std::max(max_h, h);
+            if (grid.is_interpolated[idx] != 0) {
+                interpolated_m += h;
+                ++interpolated;
+            } else {
+                raw_m += h;
+                ++measured;
+            }
+
+            if (first) {
+                min_i = grid.cells[idx].first;
+                max_i = grid.cells[idx].first;
+                min_j = grid.cells[idx].second;
+                max_j = grid.cells[idx].second;
+                first = false;
+            } else {
+                min_i = std::min(min_i, grid.cells[idx].first);
+                max_i = std::max(max_i, grid.cells[idx].first);
+                min_j = std::min(min_j, grid.cells[idx].second);
+                max_j = std::max(max_j, grid.cells[idx].second);
+            }
+        }
+
+        // Cells of this component's top surface, i.e. before the height filter dropped any.
+        std::size_t top_surface_points = 0;
+        for (const int surface_label : surface.labels) {
+            if (surface_label == label) {
+                ++top_surface_points;
+            }
+        }
+
+        const std::size_t occupied = measured + interpolated;
+        const std::size_t bbox = first ? 0 : static_cast<std::size_t>((max_i - min_i + 1) * (max_j - min_j + 1));
+
+        est.raw_volume_cm3 = raw_m * cell_area * kM3ToCm3;
+        est.interpolated_volume_cm3 = interpolated_m * cell_area * kM3ToCm3;
+        est.volume_cm3 = est.raw_volume_cm3 + est.interpolated_volume_cm3;
+        est.top_surface_points = top_surface_points;
+        est.measured_cells = measured;
+        est.interpolated_cells = interpolated;
+        est.occupied_cells = occupied;
+        est.bbox_cell_count = bbox;
+        est.footprint_area_m2 = static_cast<double>(occupied) * cell_area;
+        est.coverage_ratio = bbox > 0 ? static_cast<double>(occupied) / static_cast<double>(bbox) : 0.0;
+        est.mean_height_m = occupied > 0 ? sum_h / static_cast<double>(occupied) : 0.0;
+        est.max_height_m = max_h;
+
+        const auto missing = grid.missing_baseline_by_label.find(label);
+        est.missing_baseline_cells = missing != grid.missing_baseline_by_label.end() ? missing->second : 0;
+        const auto unfilled = stats.unfilled_by_label.find(label);
+        est.unfilled_hole_cells = unfilled != stats.unfilled_by_label.end() ? unfilled->second : 0;
+
+        out.push_back(est);
+    }
+}
+
 } // namespace
 
 #endif // __ARM_EABI__
@@ -724,8 +813,8 @@ MeasurementStatus complete_component_aware_holes(HeightGrid& grid, const Baselin
 
 
 /**
- * @brief [en] Builds the per-cell top surface of the selected components with their winning labels.
- * @brief [zh] 构建选中组件的逐格顶表面及其胜出标签。
+ * @brief [en] Builds the per-cell top surface of the selected components.
+ * @brief [zh] 构建选中连通块的逐格顶表面。
  * @attacher
  */
 SurfaceMap build_top_surface(const FoodComponents& components, const BaselineModel& baseline) {
@@ -754,6 +843,12 @@ SurfaceMap build_top_surface(const FoodComponents& components, const BaselineMod
 }
 
 
+
+namespace {
+
+// Grid construction, hole completion and grid-to-estimate conversion. Only
+// measure_component_volume below uses them; build_top_surface stays in the header because the
+// intermediate-cloud dump needs it. 栅格构建、补洞与转估计，仅供下方积分使用。
 
 /**
  * @brief [en] Builds the baseline-difference height grid from a top-surface map.
@@ -786,7 +881,7 @@ MeasurementStatus build_height_grid(const SurfaceMap& surface, const BaselineMod
 
 /**
  * @brief [en] Completes enclosed holes conservatively inside single food components, in place.
- * @brief [zh] 在单一食材组件内部保守地补全封闭孔（原地修改）。
+ * @brief [zh] 在单一食材块内部保守地补全封闭孔（原地修改）。
  * @attacher
  */
 MeasurementStatus complete_holes(HeightGrid& grid, const BaselineModel& baseline, const MeasurementConfig& cfg,
@@ -809,7 +904,7 @@ MeasurementStatus complete_holes(HeightGrid& grid, const BaselineModel& baseline
 
 /**
  * @brief [en] Derives a component volume estimate from a height grid.
- * @brief [zh] 从高度栅格派生组件体积估计。
+ * @brief [zh] 从高度栅格派生连通块体积估计。
  * @attacher
  */
 ComponentVolumeEstimate compute_grid_estimate(const HeightGrid& grid) {
@@ -833,24 +928,32 @@ ComponentVolumeEstimate compute_grid_estimate(const HeightGrid& grid) {
     return out;
 #endif // __ARM_EABI__
 }
-
-
-
+} // namespace
 /**
  * @brief [en] Measures component volume by integrating baseline-relative heights with conservative hole completion.
- * @brief [zh] 通过积分相对基线高度并保守补洞来测量组件体积。
+ * @brief [zh] 通过积分相对基线高度并保守补洞来测量连通块体积。
  * @attacher
  */
 MeasurementStatus measure_component_volume(const FoodComponents& components, const BaselineModel& baseline,
-                                           const MeasurementConfig& cfg, ComponentVolumeEstimate& out) {
+                                           const MeasurementConfig& cfg, ComponentVolumeEstimate& out,
+                                           std::vector<ComponentVolumeEstimate>* per_component,
+                                           SurfaceMap* completed_surface) {
 #ifdef __ARM_EABI__
     (void)components;
     (void)baseline;
     (void)cfg;
     (void)out;
+    (void)per_component;
+    (void)completed_surface;
     return MeasurementStatus::kUnsupportedPlatform;
 #else
     out = ComponentVolumeEstimate{};
+    if (per_component != nullptr) {
+        per_component->clear();
+    }
+    if (completed_surface != nullptr) {
+        *completed_surface = SurfaceMap{};
+    }
 
     if (components.labels.empty() || components.labels.size() != components.clouds.size()) {
         return MeasurementStatus::kInvalidConfig;
@@ -859,7 +962,7 @@ MeasurementStatus measure_component_volume(const FoodComponents& components, con
         return MeasurementStatus::kInvalidConfig;
     }
     const BaselineData& data = *baseline.data;
-    if (!(data.cell_size_m > 0.0) || !(cfg.min_height_m >= 0.0F) || cfg.baseline_fill_radius_cells < 0) {
+    if (!(data.cell_size_m > 0.0) || !(cfg.min_height_m >= 0.0F)) {
         return MeasurementStatus::kInvalidConfig;
     }
 
@@ -880,52 +983,24 @@ MeasurementStatus measure_component_volume(const FoodComponents& components, con
         return st;
     }
 
+    if (completed_surface != nullptr) {
+        completed_surface->cells = grid.cells;
+        completed_surface->labels = grid.component_labels;
+        completed_surface->heights_m.reserve(grid.cells.size());
+        for (std::size_t i = 0; i < grid.cells.size(); ++i) {
+            completed_surface->heights_m.push_back(grid.baseline_heights_m[i] + grid.heights_m[i]);
+        }
+    }
+
     out = compute_grid_estimate(grid);
     out.top_surface_points = surface.cells.size();
     out.unfilled_hole_cells = hole_stats.unfilled_hole_cells;
     log_info("integrate: measured=" + std::to_string(out.measured_cells) + " interpolated=" +
              std::to_string(out.interpolated_cells) + " volume_cm3=" + std::to_string(out.volume_cm3));
-    return MeasurementStatus::kSuccess;
-#endif // __ARM_EABI__
-}
 
-
-
-MeasurementStatus measure_component_volumes(const FoodComponents& components, const BaselineModel& baseline,
-                                            const MeasurementConfig& cfg, std::vector<ComponentVolumeEstimate>& out) {
-#ifdef __ARM_EABI__
-    (void)components;
-    (void)baseline;
-    (void)cfg;
-    (void)out;
-    return MeasurementStatus::kUnsupportedPlatform;
-#else
-    out.clear();
-
-    if (components.labels.empty() || components.labels.size() != components.clouds.size()) {
-        return MeasurementStatus::kInvalidConfig;
-    }
-
-    out.reserve(components.labels.size());
-    for (std::size_t i = 0; i < components.labels.size(); ++i) {
-        // Integrate each component in isolation so its volume, cells, and hole-fill
-        // diagnostics are reported separately rather than merged into one total.
-        FoodComponents single;
-        single.cluster_count = components.cluster_count;
-        single.labels = {components.labels[i]};
-        single.clouds = {components.clouds[i]};
-
-        ComponentVolumeEstimate estimate{};
-        const MeasurementStatus status = measure_component_volume(single, baseline, cfg, estimate);
-        if (status != MeasurementStatus::kSuccess) {
-            return status;
-        }
-        out.push_back(estimate);
+    if (per_component != nullptr) {
+        split_grid_by_component(components.labels, grid, surface, hole_stats, *per_component);
     }
     return MeasurementStatus::kSuccess;
 #endif // __ARM_EABI__
 }
-
-
-
-} // namespace vm

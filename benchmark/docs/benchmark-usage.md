@@ -88,7 +88,7 @@ build/Release/benchmark
 
 - `--no-flash` 不应要求串口设备。
 - `pyserial` 只在裸机串口采集阶段需要。
-- 如果报 `food_volume_measure/0.1.0` 找不到，说明本机 Conan cache/remote 尚未准备好目标包。
+- 如果报 `food3d_im/0.1.0` 找不到，说明本机 Conan cache/remote 尚未准备好目标包。
 
 ## 5. CI 构建产物检查
 

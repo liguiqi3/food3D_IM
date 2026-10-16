@@ -1,14 +1,14 @@
 # SOME DESCRIPTIVE TITLE.
-# Copyright (C) 2025, fcpp-innovation
-# This file is distributed under the same license as the fcpp package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2025.
+# Copyright (C) 2026, HeT-FTI
+# This file is distributed under the same license as the food3d_im
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
 #
-#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: fcpp 1.0\n"
+"Project-Id-Version: food3d_im 1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-07 10:20+0800\n"
+"POT-Creation-Date: 2026-09-30 14:37+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: zh_CN\n"
@@ -17,435 +17,284 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.17.0\n"
+"Generated-By: Babel 2.18.0\n"
 
-#: ../../source/export.rst:2 e04d780ac85246308b2b1fac3c843a77
-msgid "_`food_volume_measure usage demonstration`"
-msgstr "food_volume_measure 使用演示"
+#: ../../home/min/project/food3d_im/docs/sphinx/source/export.rst:2
+#: 1a36684e5d2b4578a7e874ec48788104
+msgid "Measure a frame"
+msgstr "测量一帧点云"
 
-#: ../../source/export.rst:4 ad259679c05b48abafc4371510adde92
+#: ../../home/min/project/food3d_im/docs/sphinx/source/export.rst:5
+#: 835f84f2189f46dca738ff4d160c5058
+msgid "Inputs and coordinate frame"
+msgstr "输入与坐标系"
+
+#: ../../home/min/project/food3d_im/docs/sphinx/source/export.rst:7
+#: 4e62559e028446afa3d53f59aa3a3270
 msgid ""
-"Brief overview: the library :code:`food_volume_measure` measures food "
-"volume on oven trays from a fixed depth camera, using the PCD-IM "
-"(baseline-plane height-difference integral) method."
-msgstr "简要概述：:code:`food_volume_measure` 库使用固定深度相机，通过 PCD-IM（基准面高度差积分）方法测量烤盘上的食材体积。"
-
-#: ../../source/export.rst:9 ca52e3b291ee474796f4ac1968fca903
-msgid "_`Theory`"
-msgstr "原理"
-
-#: ../../source/export.rst:11 4f2fbda47c444a93ac7a4e61e252e4a0
-msgid ""
-"An empty-oven baseline is first discretized into a height map on a "
-"RANSAC-fitted base plane. The food point cloud is voxel-downsampled and "
-"clustered in the base plane, and every grid cell keeps only the highest "
-"food surface point. The volume is the per-cell height difference between "
-"the food surface and the empty-oven baseline, integrated over the cell "
-"area:"
+"Capture at least one empty-tray frame and one food frame with the same "
+"camera and tray pose. All points in both inputs must use the unit set by "
+"``input_unit`` (metres by default). ROI bounds and other distance parameters"
+" are always in metres, even when the input points are in millimetres. The "
+"empty frames should cover the part of the tray occupied by food; an absent "
+"baseline cell is not replaced by a flat plane."
 msgstr ""
-"首先将空炉基线离散为 RANSAC 拟合基准面上的高度图。食物点云经体素降采样后在基准面内聚类，"
-"每个网格单元只保留最高的食物表面点。体积即食物表面与空炉基线之间的逐格高度差按单元面积积分："
+"至少拍摄一帧空烤盘和一帧放有食材的烤盘。相机和烤盘在两次拍摄时应保持相同位置。所有输入点都使用 ``input_unit`` "
+"指定的单位，默认是米。ROI 边界和其他距离参数始终使用米，即使输入点的坐标是毫米。空盘帧应覆盖食材占据的区域；没有基线数据的栅格不会被平面替代。"
 
-#: ../../source/export.rst:17 c640e65485c1425c9a6b72b989b8cb9a
+#: ../../home/min/project/food3d_im/docs/sphinx/source/export.rst:14
+#: 05a14de4db344ac6b03b203f80e68fc8
+msgid "A minimal C++ call"
+msgstr "最小 C++ 示例"
+
+#: ../../home/min/project/food3d_im/docs/sphinx/source/export.rst:39
+#: ae9fbe20c2764985bc4c1d27564942d6
 msgid ""
-"V = \\sum_{(u,v)} \\left( h_{\\text{food}}(u,v) - "
-"h_{\\text{baseline}}(u,v) \\right) \\cdot \\Delta s^2"
+"For millimetre input, call ``set_input_unit(LengthUnit::kMillimeter)`` "
+"before ``run()``. ``load_pcd()`` returns an empty cloud when it cannot read "
+"a file. Check the return status before reading numeric fields; they are NaN "
+"on failure."
 msgstr ""
+"毫米点云需在 ``run()`` 前调用 "
+"``set_input_unit(LengthUnit::kMillimeter)``。``load_pcd()`` "
+"读取失败时返回空点云。读取数值字段前先检查状态；失败时这些字段为 NaN。"
 
-#: ../../source/export.rst:22 e65a5aa0559447218bba500e3e6cc5d4
+#: ../../home/min/project/food3d_im/docs/sphinx/source/export.rst:44
+#: f75b1d04d72a4a1c8741c8baac77f33b
+msgid "How the volume is computed"
+msgstr "体积计算方法"
+
+#: ../../home/min/project/food3d_im/docs/sphinx/source/export.rst:46
+#: e7e712b9551746288f408d59d5ec38b6
 msgid ""
-"where :math:`\\Delta s` is the integration resolution. Missing depth "
-"caused by reflections is completed conservatively inside single "
-"foreground components; completed cells are counted separately from "
-"measured cells."
-msgstr "其中 :math:`\\Delta s` 为积分分辨率。反光导致的缺失深度仅在单一前景组件内部保守补全；补全单元与实测单元分开统计。"
+"The empty frames form a baseline height map on a fitted plane. Food points "
+"are filtered by their height above that map, grouped by their footprint on "
+"the plane, and rasterised into top-surface cells. For a cell with both a "
+"baseline height and a food height, the contribution is the positive height "
+"difference times the cell area:"
+msgstr "空盘帧在拟合平面上形成基线高度图。食材点按高出基线的高度筛选，再按其平面足迹分组，并栅格化为顶面。对于同时有基线和食材高度的栅格，贡献量是正的高度差乘以栅格面积："
 
-#: ../../source/export.rst:27 f45a840194e4417cadfec8286d907252
-msgid "_`Usage demonstration`"
-msgstr "使用演示"
+#: ../../home/min/project/food3d_im/docs/sphinx/source/export.rst:55
+#: 1dc2cf2c75964225a32932ca16a9ba70
+msgid "Grid of observed empty-tray points"
+msgstr "空烤盘实测点组成的栅格"
 
-#: ../../source/export.rst:29 50b4c7733e474676a89f6702346bf579
+#: ../../home/min/project/food3d_im/docs/sphinx/source/export.rst:55
+#: 874e864755dc479a95838f4114265057
+msgid "Empty-tray observations used to form the baseline grid."
+msgstr "空盘观测点用于建立基线栅格。"
+
+#: ../../home/min/project/food3d_im/docs/sphinx/source/export.rst:57
+#: 180e90ab627a4403afb8cddcff68ff18
 msgid ""
-"The end-to-end :code:`VolumePipeline::measure` composes the atomic "
-"stages. It returns a :code:`VolumeEstimate` with the integrated volume "
-"(cm³), point counts, footprint area and coverage, mean/max height, and "
-"reference volumes (AABB, OBB, convex hull)."
-msgstr "端到端的 :code:`VolumePipeline::measure` 组合了各个原子阶段。它返回一个 :code:`VolumeEstimate`，包含积分体积（cm³）、点数、足迹面积与覆盖率、平均/最大高度以及参考体积（AABB、OBB、凸包）。"
+"V = \\sum_{c \\in C} "
+"\\bigl(h_{\\mathrm{food}}(c)-h_{\\mathrm{tray}}(c)\\bigr)\\,s^2"
+msgstr ""
+"V = \\sum_{c \\in C} "
+"\\bigl(h_{\\mathrm{food}}(c)-h_{\\mathrm{tray}}(c)\\bigr)\\,s^2"
 
-#: ../../source/export.rst:34 402cd4a73ac647a78037b498e31f4aa7
-msgid "PCD-IM measurement demo"
-msgstr "PCD-IM 测量演示"
-
-#: ../../source/export.rst:55 1336f357f7f14609ae8b0656677a7a19
-msgid "_`Atomic pipeline stages`"
-msgstr "原子流水线阶段"
-
-#: ../../source/export.rst:57 d4cd138e56ba4d369fe19eae10f283cb
-msgid "The pipeline can also be driven stage by stage:"
-msgstr "流水线也可以逐阶段调用："
-
-#: ../../source/export.rst:59 fcf7cd1ee3d74d47ba82a5a77b303964
+#: ../../home/min/project/food3d_im/docs/sphinx/source/export.rst:61
+#: a0e54613e6514f4195e018d5763950b1
 msgid ""
-":code:`vm::load_pcd` — load a PCD file into the PCL-free "
-":code:`vm::PointCloud` model"
-msgstr ":code:`vm::load_pcd` — 将 PCD 文件载入与 PCL 无关的 :code:`vm::PointCloud` 模型"
+"Here ``s`` is ``integration_resolution_m`` and ``C`` contains accepted "
+"measured and filled cells. The implementation converts cubic metres to cubic"
+" centimetres for ``volume_cm3``. It may fill an enclosed hole only when the "
+"rim belongs to one food component and the safety checks pass. "
+"``raw_volume_cm3`` and ``interpolated_volume_cm3`` separate observed from "
+"inferred volume; an unfilled hole contributes neither."
+msgstr ""
+"其中 ``s`` 为 ``integration_resolution_m``，``C`` 包含被接受的实测和补洞栅格。``volume_cm3`` "
+"会把计算得到的立方米换算为立方厘米。只有孔洞边界属于单个食材块且通过保护条件，才会进行补全。``raw_volume_cm3`` 和 "
+"``interpolated_volume_cm3`` 分别表示实测与推算体积；未填充的孔洞不计入任何一项。"
 
-#: ../../source/export.rst:60 828cf2d7621349629a7cc020e1e8d83f
+#: ../../home/min/project/food3d_im/docs/sphinx/source/export.rst:71
+#: 086d0586bbc54d4e930db5b2da4a61b8
+msgid "Food points above the tray grid"
+msgstr "烤盘栅格上方的食材点"
+
+#: ../../home/min/project/food3d_im/docs/sphinx/source/export.rst:71
+#: 4a3ea36ec9e245a2abbf0f08ad3a139f
+msgid "Food surface points compared with the tray grid before integration."
+msgstr "积分前，将食材顶面点与烤盘栅格比较。"
+
+#: ../../home/min/project/food3d_im/docs/sphinx/source/export.rst:74
+#: 9a3cf8f90fd74fcf9514a511b6ea6243
+msgid "Reading the result"
+msgstr "如何看结果"
+
+#: ../../home/min/project/food3d_im/docs/sphinx/source/export.rst:76
+#: 8840a69a01d74f14a581e152b7d0450d
 msgid ""
-":code:`vm::preprocess_cloud` / :code:`vm::voxel_downsample` — unit "
-"normalization and voxel downsampling"
-msgstr ":code:`vm::preprocess_cloud` / :code:`vm::voxel_downsample` — 单位归一化与体素降采样"
+"``component_count`` and ``component_estimates`` describe the selected food "
+"components. ``selected_cluster_labels`` is aligned with "
+"``component_estimates``. ``measured_cells`` and ``interpolated_cells`` count"
+" observed and filled top-surface cells; ``unfilled_hole_cells`` counts gaps "
+"left unresolved. ``missing_baseline_cells`` counts food cells without a "
+"usable empty-tray reference. ``coverage_ratio`` is the occupied fraction of "
+"the component bounding grid, not a confidence score. AABB, OBB, and convex-"
+"hull volumes are geometric references in cubic metres; they do not use the "
+"tray height integral."
+msgstr ""
+"``component_count`` 和 ``component_estimates`` "
+"描述被选中的食材块；``selected_cluster_labels`` 与 ``component_estimates`` "
+"一一对应。``measured_cells`` 和 ``interpolated_cells`` "
+"分别统计实测与补全的顶面栅格，``unfilled_hole_cells`` 是仍未填补的孔洞栅格。``missing_baseline_cells``"
+" 表示缺少空盘参考的食材栅格。``coverage_ratio`` 是连通块包围栅格中被占用的比例，不是置信度。AABB、OBB "
+"和凸包体积是立方米单位的几何参考值，不采用烤盘高度积分。"
 
-#: ../../source/export.rst:61 ababfe790fce4e48b7e0c718af928621
+#: ../../home/min/project/food3d_im/docs/sphinx/source/export.rst:85
+#: 2d7140d1439a4a9e9b264fbd6a9e8a37
+msgid "Configuration without duplicate switches"
+msgstr "减少重复开关的配置"
+
+#: ../../home/min/project/food3d_im/docs/sphinx/source/export.rst:87
+#: 13aafeaab2d3478190e0d0c65c7d2f61
 msgid ""
-":code:`vm::remove_dominant_plane` — remove the dominant background "
-"plane(s)"
-msgstr ":code:`vm::remove_dominant_plane` — 移除主背景平面"
+"Defaults are intended as a starting point. Change only the values your "
+"capture requires:"
+msgstr "默认参数可作为起点，只改当前采集确实需要调整的值："
 
-#: ../../source/export.rst:62 575accae1d2e43e2b4a68bf692b1c240
-msgid ":code:`vm::build_baseline_model` — empty-oven baseline height map"
-msgstr ":code:`vm::build_baseline_model` — 空炉基线高度图"
-
-#: ../../source/export.rst:63 ecdb8c8f2e2f4533993a31a53131c823
+#: ../../home/min/project/food3d_im/docs/sphinx/source/export.rst:96
+#: 778bb20226f54360aa701b7b4680f564
+#, python-brace-format
 msgid ""
-":code:`vm::extract_food_components` — foreground clustering and component"
-" selection"
-msgstr ":code:`vm::extract_food_components` — 前景聚类与组件选择"
+"An ROI object enables cropping; ``clear_roi()`` disables it. An empty "
+"``selected_labels`` selects all eligible components; "
+"``set_selected_labels({0})`` selects label 0. A nonempty "
+"``middle_cloud_dir`` enables intermediate PCD output and an empty path "
+"disables it. The secondary background plane, when enabled in "
+"``MeasurementConfig``, uses the same ``plane_distance_threshold_m`` as the "
+"primary plane."
+msgstr ""
+"提供 ROI 对象即启用裁剪，``clear_roi()`` 关闭裁剪。``selected_labels`` "
+"为空时选择所有合格连通块；``set_selected_labels({0})`` 只选标签 0。``middle_cloud_dir`` "
+"非空时保存中间 PCD，空路径则关闭。若在 ``MeasurementConfig`` 中启用次级背景平面移除，它与主平面共用 "
+"``plane_distance_threshold_m``。"
 
-#: ../../source/export.rst:64 472078bea72e44d0af56468c9287d97c
+#: ../../home/min/project/food3d_im/docs/sphinx/source/export.rst:102
+#: e533f04e9bdc4d128a60ebd3b6e29ab8
+msgid "A JSON file may contain just the fields to override, for example:"
+msgstr "JSON 文件可以只写需要覆盖的字段，例如："
+
+#: ../../home/min/project/food3d_im/docs/sphinx/source/export.rst:112
+#: e255fa4cb9524e799c6dc78fbe5eef3b
 msgid ""
-":code:`vm::measure_component_volume` — height-difference integration with"
-" hole completion"
-msgstr ":code:`vm::measure_component_volume` — 高度差积分与补洞"
-
-#~ msgid "heatmap for design matrix"
-#~ msgstr ""
-
-#~ msgid "The following."
-#~ msgstr ""
-
-#~ msgid "No good."
-#~ msgstr ""
-
-#~ msgid ""
-#~ "Or further combined with other image "
-#~ "processing pipelines to obtain more "
-#~ "complicated application such as background "
-#~ "blur, showed in :numref:`Figure %s "
-#~ "<background blur>`."
-#~ msgstr ""
-
-#~ msgid ""
-#~ "Or further combined with other image "
-#~ "processing pipelines to obtain more "
-#~ "complicated application such as background "
-#~ "blur (fill the real implementation of"
-#~ " :code`// downstream tasks` in "
-#~ ":numref:`background blur`), showed in "
-#~ ":numref:`Figure %s <background blur>`."
-#~ msgstr ""
-
-#~ msgid "_`Applying effect`"
-#~ msgstr ""
-
-#~ msgid "heee."
-#~ msgstr ""
-
-#~ msgid "cortex-a53(*4)"
-#~ msgstr ""
-
-#~ msgid "cortex-a76(*4)"
-#~ msgstr ""
-
-#~ msgid ""
-#~ "The platforms with B+ or greater "
-#~ "scores are suggested to run this "
-#~ "algorithms."
-#~ msgstr ""
-
-#~ msgid "_`Full demonstration of specific lib`"
-#~ msgstr "特定库的完整演示"
-
-#~ msgid ""
-#~ "Brief overview: the library :code:`fcpp` "
-#~ "integrates segmentation algorithms for natural"
-#~ " images."
-#~ msgstr "简要概述：:code:`fcpp` 库集成了针对自然图像的分割算法。"
-
-#~ msgid "_`Theories or introduction`"
-#~ msgstr "理论或简介"
-
-#~ msgid ""
-#~ "Segmentation in :code:`fcpp` is an "
-#~ "iterative image segmentation algorithm that"
-#~ " separates foreground from background using"
-#~ " user input (e.g., a bounding box)."
-#~ " It models color distributions of "
-#~ "foreground and background with Gaussian "
-#~ "Mixture Models (GMMs), and formulates "
-#~ "segmentation as an energy minimization "
-#~ "problem on a graph. The algorithm "
-#~ "alternates between estimating pixel labels "
-#~ "via graph cuts and refining the "
-#~ "GMM parameters, converging to an optimal"
-#~ " segmentation."
-#~ msgstr ""
-#~ ":code:`fcpp` "
-#~ "中的分割是一种迭代式图像分割算法，它利用用户输入（例如边界框）将前景从背景中分离出来。它使用高斯混合模型 (GMMs) "
-#~ "对前景和背景的颜色分布进行建模，并将分割表述为图上的能量最小化问题。该算法在通过图割估计像素标签和细化 GMM "
-#~ "参数之间交替进行，最终收敛至最优分割结果。"
-
-#~ msgid ""
-#~ "E(\\mathbf{L}) = \\sum_p D_p(l_p) + "
-#~ "\\lambda \\sum_{p,q \\in \\mathcal{N}} w_{p,q}"
-#~ " \\cdot \\delta(l_p \\neq l_q)"
-#~ msgstr ""
-#~ "E(\\mathbf{L}) = \\sum_p D_p(l_p) + "
-#~ "\\lambda \\sum_{p,q \\in \\mathcal{N}} w_{p,q}"
-#~ " \\cdot \\delta(l_p \\neq l_q)"
-
-#~ msgid ""
-#~ "The total energy is composed of "
-#~ "the data term (pixel assignment cost)"
-#~ " and the smoothness term (penalty for"
-#~ " the difference in labels of adjacent"
-#~ " pixels). The unary term :math:`D_p(l_p)"
-#~ " = -\\log P(I_p | \\Theta_{l_p})` "
-#~ "describes The negative log-likelihood of"
-#~ " the color :math:`I_p` of pixel "
-#~ ":math:`p` under the foreground or "
-#~ "background GMM model :math:`\\Theta_{l_p}`, "
-#~ "while :math:`w_{p, q}` is the edge "
-#~ "weight between pixel :math:`p` and "
-#~ ":math:`q`."
-#~ msgstr ""
-#~ "总能量由数据项（像素分配代价）和平滑项（相邻像素标签差异的惩罚）组成。一元项 \\ :math:`D_p(l_p)"
-#~ " = -\\log P(I_p | \\Theta_{l_p})`\\ "
-#~ "描述了像素 :math:`p` 的颜色 :math:`I_p` 在前台或后台GMM模型"
-#~ " :math:`\\Theta_{l_p}` 下的负对数似然，而 :math:`w_{p, q}`"
-#~ " 是像素 :math:`p` 和 :math:`q` 之间的边权重。"
-
-#~ msgid "This part is optional."
-#~ msgstr "此部分是可选的。"
-
-#~ msgid ""
-#~ "The segmentation function segments the "
-#~ "input image x by automatically defining"
-#~ " a bounding box with margins "
-#~ "proportional to image size. It "
-#~ "initializes foreground and background models,"
-#~ " then runs inner grabCut with the "
-#~ "rectangle mode for 5 iterations. The "
-#~ "output mask is refined to distinguish"
-#~ " foreground (True) from background (False),"
-#~ " effectively extracting the main object "
-#~ "while suppressing borders. Ideal for "
-#~ "automated foreground extraction without user"
-#~ " input."
-#~ msgstr ""
-#~ "分割函数通过自动定义一个边距与图像大小成比例的边界框来分割输入图像 x。它初始化前景和背景模型，然后以矩形模式运行内部 "
-#~ "GrabCut 算法 5 次迭代。输出掩码经过细化以区分前景 (True) "
-#~ "和背景 (False)，在有效提取主体的同时抑制边缘。非常适用于无需用户输入的自动化前景提取。"
-
-#~ msgid "segmentation demo"
-#~ msgstr "分割演示"
-
-#~ msgid "Further explanation for your code block."
-#~ msgstr "关于您代码块的进一步说明。"
-
-#~ msgid "_`Applying results`"
-#~ msgstr "应用结果"
-
-#~ msgid ""
-#~ "The following illustration takes pictures "
-#~ "of doll, person, and chicken wing "
-#~ "as input. The algorithm can "
-#~ "automatically calculate the their contours "
-#~ "and areas (as shown in :numref:`Figure"
-#~ " %s <images segmentation>`)."
-#~ msgstr ""
-#~ "下图以玩偶、人物和鸡翅的照片作为输入。该算法可以自动计算它们的轮廓和面积（如 :numref:`图 %s "
-#~ "<images segmentation>` 所示）。"
-
-#~ msgid "Image segmentation illustration"
-#~ msgstr "图像分割示意图"
-
-#~ msgid ""
-#~ "With this segmentation algorithm, you "
-#~ "can extract the main object with "
-#~ "binding box in pictures. Like the "
-#~ ":numref:`Figure %s <food segmentations>` "
-#~ "illustrated, the proper binding boxes "
-#~ "can extract the main food objects, "
-#~ "which step is helpful for downstream "
-#~ "analysis."
-#~ msgstr ""
-#~ "利用此分割算法，您可以在图片中通过边界框提取主要物体。如\\ :numref:`图 %s <food"
-#~ " segmentations>`\\ 所示，合适的边框可以提取出主要食物对象，这一步骤有助于下游分析。"
-
-#~ msgid "Get foods from original figure"
-#~ msgstr "从原图中获取食物"
-
-#~ msgid ""
-#~ "Or further combined with other image "
-#~ "processing pipelines to obtain more "
-#~ "complicated application such as background "
-#~ "blur (fill the real implementation of"
-#~ " :code:`// downstream tasks` in "
-#~ ":numref:`background blur`), showed in "
-#~ ":numref:`Figure %s <background blur>`."
-#~ msgstr ""
-#~ "或者进一步结合其他图像处理流水线以获得更复杂的应用，例如背景虚化（在 :numref:`background "
-#~ "blur` 中填充 :code:`// downstream tasks` "
-#~ "的实际实现），如 :numref:`图 %s <background blur>` "
-#~ "所示。"
-
-#~ msgid "Background blur via segmentation algorithm"
-#~ msgstr "通过分割算法实现背景虚化"
-
-#~ msgid "_`Algorithm benchmark from test frame`"
-#~ msgstr "来自测试框架的算法基准测试"
-
-#~ msgid ""
-#~ "The following table displays our testing"
-#~ " matrix. As-checked platforms both in"
-#~ " fields of **unit** and **stress**, "
-#~ "are ideal choices if necessary."
-#~ msgstr "下表展示了我们的测试矩阵。在 **单元测试** 和 **压力测试** 领域均已验证的平台，如有需要，是理想的选择。"
-
-#~ msgid "test result among platforms"
-#~ msgstr "跨平台测试结果"
-
-#~ msgid "architecture"
-#~ msgstr "架构"
-
-#~ msgid "OS"
-#~ msgstr "操作系统"
-
-#~ msgid "CPU"
-#~ msgstr "CPU"
-
-#~ msgid "unit total"
-#~ msgstr "单元测试总计"
-
-#~ msgid "stress total"
-#~ msgstr "压力测试总计"
-
-#~ msgid "score"
-#~ msgstr "得分"
-
-#~ msgid "x86_64"
-#~ msgstr "x86_64"
-
-#~ msgid "Windows"
-#~ msgstr "Windows"
-
-#~ msgid "Core-i7 13gen"
-#~ msgstr "Core-i7 13代"
-
-#~ msgid "14822ms"
-#~ msgstr "14822毫秒"
-
-#~ msgid "173297ms"
-#~ msgstr "173297毫秒"
-
-#~ msgid "A"
-#~ msgstr "A"
-
-#~ msgid "Linux"
-#~ msgstr "Linux"
-
-#~ msgid "AMD Ryzen 7"
-#~ msgstr "AMD Ryzen 7"
-
-#~ msgid "13823ms"
-#~ msgstr "13823毫秒"
-
-#~ msgid "154512ms"
-#~ msgstr "154512毫秒"
-
-#~ msgid "A+"
-#~ msgstr "A+"
-
-#~ msgid "arm"
-#~ msgstr "arm"
-
-#~ msgid "cortex-m3"
-#~ msgstr "Cortex-M3"
-
-#~ msgid "failed"
-#~ msgstr "失败"
-
-#~ msgid "D"
-#~ msgstr "D"
-
-#~ msgid "cortex-a53"
-#~ msgstr "Cortex-A53"
-
-#~ msgid "25392ms"
-#~ msgstr "25392毫秒"
-
-#~ msgid "254129ms"
-#~ msgstr "254129毫秒"
-
-#~ msgid "B"
-#~ msgstr "B"
-
-#~ msgid "cortex-a53(4)"
-#~ msgstr "Cortex-A53(4核)"
-
-#~ msgid "20365ms"
-#~ msgstr "20365毫秒"
-
-#~ msgid "233820ms"
-#~ msgstr "233820毫秒"
-
-#~ msgid "B+"
-#~ msgstr "B+"
-
-#~ msgid "cortex-a76(4)"
-#~ msgstr "Cortex-A76(4)"
-
-#~ msgid "16928ms"
-#~ msgstr "16928毫秒"
-
-#~ msgid "198923ms"
-#~ msgstr "198923毫秒"
-
-#~ msgid "..."
-#~ msgstr "..."
-
-#~ msgid "risc-v"
-#~ msgstr "risc-v"
-
-#~ msgid "SiFive U74"
-#~ msgstr "SiFive U74"
-
-#~ msgid "35329ms"
-#~ msgstr "35329毫秒"
-
-#~ msgid "735723ms"
-#~ msgstr "735723毫秒"
-
-#~ msgid "C"
-#~ msgstr "C"
-
-#~ msgid "Allwinner D1"
-#~ msgstr "全志 D1"
-
-#~ msgid "38234ms"
-#~ msgstr "38234毫秒"
-
-#~ msgid "825231ms"
-#~ msgstr "825231毫秒"
-
-#~ msgid "C-"
-#~ msgstr "C-"
-
-#~ msgid ""
-#~ "The platforms with B+ or greater "
-#~ "scores in :numref:`Table %s <test "
-#~ "results>` are suggested to run this "
-#~ "algorithms."
-#~ msgstr "建议使用 :numref:`表 %s <test results>` 中评分为 B+ 或更高的平台来运行此算法。"
+"Call ``load_config_from_json(path)`` before ``run()`` and check its Boolean "
+"return value. Removed or unknown keys are rejected. Save a full snapshot "
+"with ``save_config_to_json(path)``."
+msgstr ""
+"在 ``run()`` 前调用 ``load_config_from_json(path)``，并检查布尔返回值。已删除或未知的键会被拒绝。调用 "
+"``save_config_to_json(path)`` 可保存完整配置快照。"
+
+#: ../../home/min/project/food3d_im/docs/sphinx/source/export.rst:116
+#: 419359c79152481f8b934fa4b76a3eba
+msgid "Inspecting a measurement"
+msgstr "检查一次测量"
+
+#: ../../home/min/project/food3d_im/docs/sphinx/source/export.rst:118
+#: 11f69da1c4304e9eaea31a53cbf47acf
+msgid ""
+"With ``middle_cloud_dir`` set, a successful run writes stage PCD files. "
+"Compare ``5_top_surface.pcd`` (measured top cells) with "
+"``6_hole_filled_surface.pcd`` (measured plus accepted filled cells). "
+"``4_food_component_label<NN>.pcd`` isolates each selected component. These "
+"files use world coordinates. If ``missing_baseline_cells`` is high, capture "
+"more of the empty tray. If ``interpolated_cells`` is high, inspect the "
+"missing region before trusting the filled volume."
+msgstr ""
+"设置 ``middle_cloud_dir`` 后，成功测量会写出各阶段 PCD。比较 ``5_top_surface.pcd``（实测顶面栅格）和 "
+"``6_hole_filled_surface.pcd``（实测加已接受的补洞栅格）；``4_food_component_label<NN>.pcd``"
+" 可单独查看选中的食材块。文件使用世界坐标。若 ``missing_baseline_cells`` 很多，应补拍空盘覆盖区域；若 "
+"``interpolated_cells`` 很多，应先检查缺失区域，再决定是否采用补洞体积。"
+
+#: ../../home/min/project/food3d_im/docs/sphinx/source/export.rst:125
+#: 4dbd4a1702744da4859e79f680ea0aa7
+msgid ""
+"For several food frames against the same empty tray, set the first food "
+"frame and call ``prepare_baseline()`` once. After a successful preparation, "
+"``set_food()`` followed by ``run()`` reuses the baseline. Keep the camera, "
+"tray, input unit, and baseline-related parameters fixed; changing baseline "
+"inputs or their parameters invalidates the cache. The first food frame is "
+"also used to orient the plane normal, so later frames must be on the same "
+"side of the tray."
+msgstr ""
+"若多帧食材使用同一空烤盘基线，可先设置第一帧食材并调用一次 ``prepare_baseline()``。准备成功后，重复调用 "
+"``set_food()`` 和 ``run()`` "
+"会复用基线。保持相机、烤盘、输入单位和基线相关参数不变；修改基线输入或相关参数会使缓存失效。第一帧食材还用于确定平面法向，因此后续食材必须位于烤盘同侧。"
+
+#: ../../home/min/project/food3d_im/docs/sphinx/source/export.rst:133
+#: cfdc49bb62bc42e9ade0999809b08629
+msgid "When a run fails"
+msgstr "测量失败时"
+
+#: ../../home/min/project/food3d_im/docs/sphinx/source/export.rst:135
+#: 54b5e89ed46f4dfd9b215b19f043c531
+msgid ""
+"Read ``status_to_string(result.status)`` first, then check the corresponding"
+" input:"
+msgstr "先读取 ``status_to_string(result.status)``，再检查对应的输入："
+
+#: ../../home/min/project/food3d_im/docs/sphinx/source/export.rst:141
+#: f252f95daede4c2b9c75026fc4fdfa15
+msgid "Status"
+msgstr "状态"
+
+#: ../../home/min/project/food3d_im/docs/sphinx/source/export.rst:142
+#: e2ed0af7914c44d79c75854ae2d0626c
+msgid "What to check"
+msgstr "检查方向"
+
+#: ../../home/min/project/food3d_im/docs/sphinx/source/export.rst:143
+#: d1998e493d544d1280678add49ad2259
+msgid "``kEmptyBaseline`` or ``kEmptyInput``"
+msgstr "``kEmptyBaseline`` 或 ``kEmptyInput``"
+
+#: ../../home/min/project/food3d_im/docs/sphinx/source/export.rst:144
+#: f685520342d446aabfea22e6ccd2fb98
+msgid ""
+"Confirm that the PCD files loaded and that ``set_baseline`` and ``set_food``"
+" received nonempty clouds."
+msgstr "确认 PCD 已成功读取，且 ``set_baseline`` 和 ``set_food`` 收到了非空点云。"
+
+#: ../../home/min/project/food3d_im/docs/sphinx/source/export.rst:146
+#: 9b1186d0c26849ba89db33e2222d2424
+msgid "``kInvalidConfig``"
+msgstr "``kInvalidConfig``"
+
+#: ../../home/min/project/food3d_im/docs/sphinx/source/export.rst:147
+#: 84fe66450f594a42bfc77637189ad05b
+msgid "Check positive distance and grid sizes, and strictly increasing ROI bounds."
+msgstr "检查距离和栅格边长是否为正，以及 ROI 各轴的最小边界是否严格小于最大边界。"
+
+#: ../../home/min/project/food3d_im/docs/sphinx/source/export.rst:148
+#: 63f52f1fc8204adfa3b819a71176a94a
+msgid "``kPlaneNotFound`` or ``kBaselineNoCells``"
+msgstr "``kPlaneNotFound`` 或 ``kBaselineNoCells``"
+
+#: ../../home/min/project/food3d_im/docs/sphinx/source/export.rst:149
+#: ebd9122e274f4ab9b785b0b0a723a7df
+msgid ""
+"Check whether the empty-tray capture has enough finite points over the "
+"measurement area."
+msgstr "检查空盘采集是否在测量区域内包含足够多的有效点。"
+
+#: ../../home/min/project/food3d_im/docs/sphinx/source/export.rst:150
+#: 0fe342b16c55415d92cb6bf85767fc31
+msgid "``kFoodNotFound``"
+msgstr "``kFoodNotFound``"
+
+#: ../../home/min/project/food3d_im/docs/sphinx/source/export.rst:151
+#: 51984365aa104a33b58637f3886749db
+msgid "Check the crop, height range, clustering settings, and any selected labels."
+msgstr "检查裁剪范围、高度范围、聚类参数以及选中的标签。"
+
+#: ../../home/min/project/food3d_im/docs/sphinx/source/export.rst:152
+#: f9a1fbbbf10e431397e9e4bf70f08b7b
+msgid "``kUnsupportedPlatform``"
+msgstr "``kUnsupportedPlatform``"
+
+#: ../../home/min/project/food3d_im/docs/sphinx/source/export.rst:153
+#: 3cd6c62a63cc46f8b5ace25aafcb7d0b
+msgid "Run the PCL measurement on a supported host platform."
+msgstr "在支持 PCL 的主机平台运行测量。"
 

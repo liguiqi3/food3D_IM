@@ -64,38 +64,63 @@ function(split_conan_dependency INPUT_STR PACKAGE_NAME TARGETS)
 endfunction()
 
 
+# Define file search patterns before anchoring every glob to its intended
+# source directory.  This preserves the configurable pattern contract while
+# avoiding CMake's unsupported PATHS argument for file(GLOB_RECURSE).
+set(C_HEADER_PATTERNS "*.h")
+set(CPP_HEADER_PATTERNS "*.hpp")
+set(C_SOURCE_PATTERNS "*.c")
+set(CPP_SOURCE_PATTERNS "*.cpp")
+set(MODULE_PATTERNS "*.ixx" "*.cppm")
+
 # auto file collection
+# NOTE: `file(GLOB_RECURSE)` has no PATHS keyword. An extra directory argument is
+# silently treated as just another globbing expression, so the intended scope is lost
+# and the pattern recurses the whole tree (picking up api/, test_package/, benchmark/
+# and build/). Every pattern is therefore anchored with its directory.
 file(GLOB_RECURSE C_HEADERS
         LIST_DIRECTORIES false
         CONFIGURE_DEPENDS
-        "${CMAKE_CURRENT_SOURCE_DIR}/include/*.h"
+        "${CMAKE_CURRENT_SOURCE_DIR}/include/${C_HEADER_PATTERNS}"
 )
 
 file(GLOB_RECURSE CPP_HEADERS
         LIST_DIRECTORIES false
         CONFIGURE_DEPENDS
-        "${CMAKE_CURRENT_SOURCE_DIR}/include/*.hpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/include/${CPP_HEADER_PATTERNS}"
 )
 
 file(GLOB_RECURSE C_SOURCES
         LIST_DIRECTORIES false
         CONFIGURE_DEPENDS
-        "${CMAKE_CURRENT_SOURCE_DIR}/src/*.c"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/${C_SOURCE_PATTERNS}"
 )
 
 file(GLOB_RECURSE CPP_SOURCES
         LIST_DIRECTORIES false
         CONFIGURE_DEPENDS
-        "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/${CPP_SOURCE_PATTERNS}"
 )
+
+set(_module_globs "")
+foreach(_pattern IN LISTS MODULE_PATTERNS)
+    list(APPEND _module_globs "${CMAKE_CURRENT_SOURCE_DIR}/src/${_pattern}")
+endforeach()
 
 file(GLOB_RECURSE MODULE_FILES
         LIST_DIRECTORIES false
         CONFIGURE_DEPENDS
-        "${CMAKE_CURRENT_SOURCE_DIR}/src/*.ixx"
-        "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cppm"
+        ${_module_globs}
 )
 
+# add_library() rejects an empty source list, and a C++-only package has no C sources.
+# Feed the C target a generated empty translation unit so the target — and every
+# downstream reference to it — stays valid without extra conditionals.
+if(NOT C_SOURCES)
+    set(_c_stub "${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME}_c_empty.c")
+    file(WRITE "${_c_stub}" "/* generated: keeps the C target non-empty for a C++-only package */\n")
+    set(C_SOURCES "${_c_stub}")
+endif()
 
 if(IS_HEADER)  # header-only package
 
@@ -198,8 +223,8 @@ else()  # general package
   )
 
 
-  # code coverage options
-  if(ENABLE_COVERAGE)
+  # code coverage options (host builds only; cross-compiled board binaries don't use coverage)
+  if(ENABLE_COVERAGE AND NOT CMAKE_CROSSCOMPILING)
       if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
           set(COVERAGE_FLAGS "--coverage" "-O0" "-g")
           set(LINK_FLAGS "--coverage")
@@ -293,7 +318,7 @@ else()  # general package
       message(STATUS "C++ standard ${BUILD_CPPSTD} < 23, disabling module support")
   endif()
 
-  if(ENABLE_PYBIND)
+  if(ENABLE_PYBIND AND NOT CMAKE_CROSSCOMPILING)
     set(PYTHON_MODULE_NAME "${LIB_NAME}_python")
 
     find_package(pybind11 CONFIG REQUIRED)
@@ -322,8 +347,10 @@ else()  # general package
     )
     
     message(STATUS "Python module '${PYTHON_MODULE_NAME}' will be built")
+  elseif(ENABLE_PYBIND)
+    message(STATUS "Python bindings skipped: cross-compiling (host Python headers are not usable for the target)")
   else()
-    message(STATUS "Python bindings disabledPython bindings disabled")
+    message(STATUS "Python bindings disabled")
   endif()
 
   if(SHARED_MSG)

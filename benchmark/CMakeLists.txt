@@ -72,9 +72,6 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     )
 
     target_link_options(benchmark PRIVATE
-        # The food library is coverage-instrumented by metadata.json; GCC
-        # benchmarks must link libgcov when consuming its static archive.
-        $<$<CXX_COMPILER_ID:GNU>:--coverage>
         -Wl,--gc-sections
     )
 
